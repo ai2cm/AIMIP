@@ -1,11 +1,16 @@
 # AIMIP Phase 1 Specification
 
 Chris Bretherton ([christopherb@allenai.org](mailto:christopherb@allenai.org))  
-Version 1: Jul 15, 2025 
+Version 2: Aug 13, 2025 
 
 Based on the 12/2024 [AIMIP proposal](https://docs.google.com/document/d/1oPP_ia4F-vBZJbPJ820JbyAl6B4kHtQT59Sixj9nEEs/edit?usp=sharing) gdoc and valuable feedback from many comments on earlier versions of this doc from around the world (esp. Nikolai Koldunov) and colleagues in Ai2 Climate Modeling (esp. Brian Henn). 
 
-This document should get participants started, but will reflect ongoing improvements
+This document should get participants started, but will reflect ongoing improvements  
+V1: July 16, 2025  
+V2: Aug.13, 2025: 
+
+*    Link added to 0.25 ERA5-based monthly SST/sea ice data set created by Ai2  
+*    Clarify that submission of daily data from inference simulations is optional.
 
 **Goals of AIMIP Phase 1 (AIMIP-1)**
 
@@ -25,7 +30,7 @@ This is envisioned as a first step toward AI weather/climate models that can ful
    It is intended to document the current state of the art for AI models of the global atmosphere, including strengths, weaknesses and challenges.  AI models for climate are diverse and rapidly evolving.  The skill of tomorrow’s AI models will likely eclipse today’s models before we even analyze the AIMIP-1 results.   
       
 2) *AIMIP-1 outputs are not as comprehensive as for physical climate models*  
-   Many AI climate models predict only a small subset of the fields and vertical levels that a physical climate model might use.  For instance, many AI climate models don’t predict cloud properties; they account for them through their space-time covariability with other fields that are predicted, like humidity and temperature.  We will evaluate the credibility of AMIP simulations by AI climate models using key CMIP-like metrics of mean climate and atmospheric variability.
+   Many AI climate models predict only a small subset of the fields and vertical levels that a physical climate model might use.  For instance, many AI climate models don’t predict cloud properties; they account for them through their space-time covariability with other fields that are predicted, like humidity and temperature.  We will evaluate the credibility of AMIP simulations by AI climate models using key CMIP-like metrics of mean climate and atmospheric variability.  
      
    The requested monthly-mean AIMIP-1 outputs are designed to parsimoniously enable this goal.  It would be premature to accommodate all downstream use cases or specialized analyses of CMIP model outputs.  Similarly, a full multidecadal suite of daily (rather than monthly) data would enable additional analysis of weather variability and extreme events, but would be storage-intensive and is not required to test the basic credibility of AMIP simulations.  A single year of daily data suffices to test whether an AI model has credible weather variability.  
      
@@ -59,25 +64,34 @@ AIMIP-1 models should use the periods 1979-2014 for model training (including hy
 
 **AMIP simulation details**
 
-An AMIP simulation is one element of the CMIP DECK ([Eyring et al. 2016](https://doi.org/10.5194/gmd-9-1937-2016), [Dunne et al. 2024](https://doi.org/10.5194/egusphere-2024-3874)), the basic suite of simulations required by CMIP6 and CMIP7.  The CMIP [input4mips](https://pcmdi.llnl.gov/mips/input4MIPs/) project that assembles the needed forcing data for the DECK simulations provides [AMIP specifications of the monthly historical SST and sea-ice fraction](https://input4mips-cvs.readthedocs.io/en/latest/dataset-overviews/amip-sst-sea-ice-boundary-forcing/).   
+*AIMIP-1 monthly forcing dataset*
+
+An AMIP simulation is one element of the CMIP DECK ([Eyring et al. 2016](https://doi.org/10.5194/gmd-9-1937-2016), [Dunne et al. 2024](https://doi.org/10.5194/egusphere-2024-3874)), the basic suite of simulations required by CMIP6 and CMIP7.  Using monthly forcings is attractive because it keeps the needed forcing file compact with minimal degradation of the simulated climate.  
+
+The CMIP [input4mips](https://pcmdi.llnl.gov/mips/input4MIPs/) project that assembles the needed forcing data for the DECK simulations provides [AMIP specifications of the monthly historical SST and sea-ice fraction](https://input4mips-cvs.readthedocs.io/en/latest/dataset-overviews/amip-sst-sea-ice-boundary-forcing/).   However, it is not quite suitable for AIMIP.  First, it doesn’t extend past 2022, while AIMIP inference simulations will cover through 2024 to maximize the possible length of high-quality observational comparison.  Second, the AMIP algorithm for calculating monthly values for SST and sea-ice fraction is problematic.  It involves specifying mid-month values that, when linearly interpolated in time, give the monthly-mean values in the reference dataset.  This inevitably produces overshoots in the mid-month values.  Sea-ice fraction in some grid cells can switch between near 1 and near 0 in successive months, and the CMIP algorithm occasionally results in mid-month values of sea-ice fraction that are below zero and must be thresholded to zero. This results in small biases in annual-mean sea-ice concentration that have a noticeable effect on the annual mean temperature in some grid cells in the seasonal ice zone.
+
+Instead, we at Ai2 have created a compact [1979-2024 monthly AMIP-like SST and sea-ice forcing dataset to use for AIMIP-1 inference runs](https://zenodo.org/records/16782373) that addresses these issues. It is based on daily outputs from ERA5 on its 0.25° lat/lon grid .   These are averaged to forcing values at the beginning of each month using a centered four week rectangular averaging window.  The SST and sea-ice fraction forcings at intermediate times are obtained by linear interpolation.  This method of generating monthly forcings doesn’t produce data overshoots and preserves the annual time-mean of each forcing field, although individual monthly means are not exactly preserved.  We have checked that when used to force inference runs with our emulator, it produces a climate nearly identical to the use of daily forcing data, even in the seasonal sea-ice zones.  Each modeling group should spatially interpolate this monthly forcing to their native grid.
+
+*Don’t explicitly include CO2 as a forcing*
 
 The AMIP protocol for physics-based models also specifies time-varying concentrations of other greenhouse gases and aerosols, but for simplicity, **AIMIP-1 should not include any input specifying time-varying concentrations of CO2 or other radiative forcers**.  Even for physics-based climate models, the AMIP SST specification strongly controls the climate response, such that additionally including CO2 changes during the AMIP period would only have small climate effects, e. g. a fraction of a Kelvin on land surface temperatures.  Our prior experience at Ai2 is that although adding radiative forcing inputs with systematic anthropogenic trends like CO2 to an AI model can improve AMIP inference within the training period, this can also degrade its out-of-sample performance.  Such inputs strongly co-vary with the resulting forced climate change that is already manifest in the SST forcing; this makes their independent effects difficult for the AI to learn.  Appropriate solutions to this issue are being developed, but are not yet mature.  Unlike physics-based models, AI models can learn most effects of anthropogenic radiative forcing trends from the reanalysis training data, even without explicitly including these inputs.  
 
-We will provide a compact AIMIP-1-specific forcing dataset (through an upcoming link from this page) for monthly SST and sea-ice concentration to be used for inference simulations.  This dataset is generally consistent with CMIP7 specifications but has two advantages:  
-(1) it can be generated from ERA5 outputs and hence is internally consistent with our other training/testing data, and (2) it extends through 2024 (while the CMIP7 AMIP data only goes through 2022). The specifications are for monthly values that, when linearly interpolated between monthly midpoints, give monthly means derived from ERA5 daily observational estimates.  At Ai2, we have checked that our AIMIP-1 forcings produce negligible differences in climate statistics for our emulator vs. using the CMIP7 AMIP specifications.
+*Submit an ensemble of five inference simulations*
 
 All groups should perform an ensemble of five inference simulations forced by AMIP SSTs and sea ice concentration, starting 00 UTC 1 Oct. 1978 and run 46 years until 00 UTC 1 Jan 2025\.  Modeling groups can choose their favored method of ensemble creation. For instance, this could be an initial condition (IC) ensemble using five noise perturbations on the natural ERA5 IC, or ICs from five successive days in ERA5, or five different realizations of a stochastic model.  The three initial months are regarded as a spin-up period, after which the simulation should continue 46 additional years until 00 UTC 1 Jan 2025\. 
 
-*Time span for monthly outputs*  
+*Time span for monthly outputs*
+
 For all submitted simulations, please provide monthly-mean output for the entire 46.25 year period. The years 2015-2024 of these simulations will be analyzed as an out-of-sample test, but we will also look at simulated trends and ENSO variability in the full 1979-2024 period.
 
-*Time spans for daily outputs*  
-For these simulations, we also request:
+*Time spans for optional daily outputs*
+
+For these simulations, we also request (but do not require):
 
 * Daily data from 1 Oct. 1978 \- 31 Dec. 1979 to assess AI model spin-up (first three months) and the simulated PDF of daily weather variability in the following 12 months after memory of the initial conditions is lost  
 * Daily data from the full year of 2024 as an out-of-sample test.  
 
-For AIMIP-1, we will assess the sub-monthly variance of selected fields (e.g. T200, T850, Z500) in different models, but other analysts may use this data to examine modes of variability such as annular modes, the MJO, etc.
+For AIMIP-1, we will only assess the sub-monthly variance of selected fields (e.g. T200, T850, Z500) in the models that provide the requested daily outputs, but other analysts may use this data to examine modes of variability such as annular modes, the MJO, etc.
 
 Some models may not produce stable simulations over the entire requested inference period.  That is still useful information for the broader climate modeling community to hear about.  In that case, please report (even if just by email to me) how long your model ran for before blowing up or producing physically implausible results.  We could summarize such results in a table in our initial publication. 
 
@@ -95,13 +109,13 @@ A central goal of AIMIP-1 is to be as compatible as possible with the upcoming C
 
 * Following CMIP recommendations for naming and organizing our data  
 * Producing a sufficiently broad set of CMIP-standard \`baseline climate variables’ to enable productive use of CMIP model evaluation software, without overly stretching what our AI-based climate models naturally simulate.  
-* Writing a paper about the AIMIP-1 intercomparison for the EGU journal *Geoscientific Model Development* as part of the CMIP7 special issue.
+* Writing a paper about the AIMIP-1 intercomparison for the EGU journal *Geoscientific Model Development* as part of the CMIP7 special issue.  
 * Ultimately publishing our data archive on the ESGF, as is standard for CMIP-related projects.
 
    
-To this end, our data will need to be ‘CMOR-ized’ – names and units for all output variables (including time) should be ‘CF-compliant’ with the [Climate and Forecast Conventions](https://cfconventions.org/) and follow strict CMIP naming protocols.  This will allow us to better leverage CMIP’s large existing diagnostics infrastructure, including a new comprehensive ‘[rapid evaluation framework](https://wcrp-cmip.org/cmip-phases/cmip7/rapid-evaluation-framework/)’ and efficiently interact with the substantial CMIP model evaluation community.  CMIP7 also has a specified format for filename and directory structure that will streamline publishing our data archive on the ESGF.   
+To this end, our data will need to be ‘CMOR-ized’ – names and units for all output variables (including time) should be ‘CF-compliant’ with the [Climate and Forecast Conventions](https://cfconventions.org/) and follow strict CMIP naming protocols.  The CMIP6 specification document, filenames, directory structures etc, can be found at [https://doi.org/10.5281/zenodo.12768886](https://doi.org/10.5281/zenodo.12768886).  This will allow us to better leverage CMIP’s large existing diagnostics infrastructure, including a new comprehensive ‘[rapid evaluation framework](https://wcrp-cmip.org/cmip-phases/cmip7/rapid-evaluation-framework/)’ and efficiently interact with the substantial CMIP model evaluation community.  CMIP7 also has a specified format for filename and directory structure that will streamline publishing our data archive on the ESGF.   Numerous CMIP7 (and earlier) resources are being colocated under the [https://zenodo.org/communities/wcrp-cmip umbrella](https://zenodo.org/communities/wcrp-cmip)
 
-The Alfred Wegener Institute (AWI) is developing a Python package for CMORisation (PyMOR). Materials from their recent workshop are available at [https://github.com/esm-tools/pymor\_workshop](https://github.com/esm-tools/pymor_workshop). Christian Lessig of ECMWF is trying this approach out on ArchesWeatherGen.  Shiheng Duan of PCMDI has CMORized outputs from earlier versions of ACE and NeuralGCM; he could also provide advice.
+The Alfred Wegener Institute (AWI) is developing a Python package for CMORisation (PyMOR). Materials from their recent workshop are available at [https://github.com/esm-tools/pymor\_workshop](https://github.com/esm-tools/pymor_workshop). Christian Lessig of ECMWF is trying this approach out on ArchesWeatherGen.  Shiheng Duan of PCMDI has CMORized outputs from earlier versions of ACE and NeuralGCM; he could also provide advice. There are numerous examples of CMORizing workflows to build on, see the parallel projects for some standalone examples, see the DRCDP project ([here](https://github.com/PCMDI/DRCDP/tree/main/DataPreparationExamples/DEMO)).
 
 Monthly-mean (Oct. 1978- Dec. 2024\)
 
@@ -112,7 +126,7 @@ The requested outputs from each simulation should be written out in single preci
 * MMM is your self-selected model name, e.g. ACE. Model name can contain dashes (e.g. MPI-ESM1-2-HR, but not underscores).  To indicate that a submission is a custom model rather than a standard model,  include ‘-custom’ in the model name.  
 * r1i1p1f1 \= ensemble member number, e.g. where r: realisation (i.e. ensemble member), i: initialisation method, p: physics, and f: forcing.   
   * If you only submit one version of the model, name the first ensemble member r1i1p1f1, and only increment the realization (r2, r3, r4, r5) for the other initial condition ensemble members   
-  * gX has two options: \`gr\`: regridded data reported on the data provider's preferred target grid (as requested here), and \`gn\`: data reported on a model's native grid. 
+  * gX has two options: \`gr\`: regridded data reported on the data provider's preferred target grid, and \`gn\`: data reported on a model's native grid (as requested here). 
 
 Amon denotes AMIP monthly output.  Use Ap2mon and Ap4mon in place of Amon for file names of the warmed-SST runs.
 
@@ -138,7 +152,7 @@ The WeatherBench-2 project used a 13-level subset with less stratosphere levels:
 3D fields should be written as arrays with dims (time, pressure, latitude, longitude)  
 At each gridpoint & level, report the following fields \[CFfieldname, MKS units\]:
 
-temperature \[ta, K\],   
+temperature \[ta, K, e.g., CMIP6 monthly mean field description [here](https://github.com/PCMDI/cmip6-cmor-tables/blob/5d08a879bbc79657c367098a2b84279593e63551/Tables/CMIP6_Amon.json#L1133-L1150)\],   
 specific humidity \[hus, kg/kg\],   
 eastward wind component \[ua, m/s\],   
 northward wind component \[va, m/s\]
@@ -149,7 +163,7 @@ In addition, the following surface fields with dims (time, latitude, longitude) 
 surface pressure \[ps, Pa\] and/or sea-level pressure \[psl, Pa\]  
 surface temperature \[ts, K\] (skin temp. over land or sea ice, SST over ocean, whatever your model uses in grid cells with mixed surface types)  
 2 m air temperature \[tas, K\],   
-2 m specific humidity \[huss, kg/kg\],   
+2 m dewpoint temperature \[tdas, kg/kg\],   
 10 m eastward wind \[uas, m/s\],   
 10 m northward wind \[vas, m/s\],   
 Surface precipitation rate \[pr, kg/(m^2 s)\], includes both liquid and frozen \- this should be computed as a time-averaged rate over the month, rather than from a month of daily snapshots, to avoid adding excessive sampling noise.
@@ -191,7 +205,7 @@ Weights for your submitted models should also be submitted to allow other groups
 
 **Who evaluates the AIMIP-1 submissions?**
 
-Ai2 Climate Modeling can help with coordinating this, based on our experience.  Libby Barnes of Boston University, Nikolai Koldunov of AWI, Will Chapman of NCAR, and Hannah Christensen of Oxford have also volunteered to help with this evaluation.
+Ai2 Climate Modeling can help with coordinating this, based on our experience.  Libby Barnes of Boston University, Nikolai Koldunov of AWI, Will Chapman of NCAR, Maria Molina of UMD, and Hannah Christensen of Oxford have also volunteered to help with this evaluation.
 
 **How will they be stored and distributed?**
 
