@@ -1,18 +1,25 @@
 # AIMIP Phase 1 Specification
 
-Chris Bretherton ([christopherb@allenai.org](mailto:christopherb@allenai.org))  
-Version 2: Aug 13, 2025 
+Chris Bretherton ([christopherb@allenai.org](mailto:christopherb@allenai.org)), Allen Institute for Artificial Intelligence (Ai2)
 
-Based on the 12/2024 [AIMIP proposal](https://docs.google.com/document/d/1oPP_ia4F-vBZJbPJ820JbyAl6B4kHtQT59Sixj9nEEs/edit?usp=sharing) gdoc and valuable feedback from many comments on earlier versions of this doc from around the world (esp. Nikolai Koldunov) and colleagues in Ai2 Climate Modeling (esp. Brian Henn). 
+The latest dated version is publicly posted on the [AIMIP-1 Github site](https://github.com/ai2cm/AIMIP)  
+Interested in participating?  Email me to join our AIMIP Google Group.  
+   
+Based on the 12/2024 [AIMIP proposal](https://docs.google.com/document/d/1oPP_ia4F-vBZJbPJ820JbyAl6B4kHtQT59Sixj9nEEs/edit?usp=sharing) gdoc and valuable feedback from many comments on earlier versions of this doc from around the world (esp. Nikolai Koldunov) and colleagues in Ai2 Climate Modeling (esp. Brian Henn).  Dated versions
 
 This document should get participants started, but will reflect ongoing improvements  
 V1: July 16, 2025  
 V2: Aug.13, 2025: 
 
-*    Link added to 0.25 ERA5-based monthly SST/sea ice data set created by Ai2  
-*    Clarify that submission of daily data from inference simulations is optional.
+* Link added to 0.25° Ai2-generated ERA5-based monthly SST/sea ice data set for forcing inference simulations created by Ai2  
+* Clarify that submission of daily data from inference simulations is optional.
 
-_Update Sep 12, 2025:_ The link to the Zenodo forcing dataset was updated to point to the latest version (v2) .
+V3: Sept. 25, 2025:  
+
+* New submission schedule: Initial submissions due by Nov. 30, 2025 \- this acknowledges that it is taking time for groups to complete a submission in the desired output format.   
+* ERA5 dataset extended to 01/2025 to include 01/01/25 forcings needed for monthly linear interpolation across 12/2024. The link to the Zenodo forcing dataset was updated to point to the extended version.  
+* Suggested work-around for small incompatibilities in ERA5 sea-ice forcing data between land mask and sea-ice fraction in 0.25° cells on land-water boundaries.
+
 
 **Goals of AIMIP Phase 1 (AIMIP-1)**
 
@@ -72,7 +79,9 @@ An AMIP simulation is one element of the CMIP DECK ([Eyring et al. 2016](https:/
 
 The CMIP [input4mips](https://pcmdi.llnl.gov/mips/input4MIPs/) project that assembles the needed forcing data for the DECK simulations provides [AMIP specifications of the monthly historical SST and sea-ice fraction](https://input4mips-cvs.readthedocs.io/en/latest/dataset-overviews/amip-sst-sea-ice-boundary-forcing/).   However, it is not quite suitable for AIMIP.  First, it doesn’t extend past 2022, while AIMIP inference simulations will cover through 2024 to maximize the possible length of high-quality observational comparison.  Second, the AMIP algorithm for calculating monthly values for SST and sea-ice fraction is problematic.  It involves specifying mid-month values that, when linearly interpolated in time, give the monthly-mean values in the reference dataset.  This inevitably produces overshoots in the mid-month values.  Sea-ice fraction in some grid cells can switch between near 1 and near 0 in successive months, and the CMIP algorithm occasionally results in mid-month values of sea-ice fraction that are below zero and must be thresholded to zero. This results in small biases in annual-mean sea-ice concentration that have a noticeable effect on the annual mean temperature in some grid cells in the seasonal ice zone.
 
-Instead, we at Ai2 have created a compact [1979-2024 monthly AMIP-like SST and sea-ice forcing dataset to use for AIMIP-1 inference runs](https://doi.org/10.5281/zenodo.16782372) that addresses these issues. It is based on daily outputs from ERA5 on its 0.25° lat/lon grid .   These are averaged to forcing values at the beginning of each month using a centered rectangular averaging window.  The SST and sea-ice fraction forcings at intermediate times are obtained by linear interpolation.  This method of generating monthly forcings doesn’t produce data overshoots and preserves the annual time-mean of each forcing field, although individual monthly means are not exactly preserved.  We have checked that when used to force inference runs with our emulator, it produces a climate nearly identical to the use of daily forcing data, even in the seasonal sea-ice zones.  Each modeling group should spatially interpolate this monthly forcing to their native grid. Note: Please use version 2 of the Zenodo dataset linked above, as the original version did not extend completely through 2024.
+Instead, we at Ai2 have created a compact [1979-2024 monthly AMIP-like SST and sea-ice forcing dataset to use for AIMIP-1 inference runs](https://doi.org/10.5281/zenodo.16782372) that addresses these issues. It is based on daily outputs from ERA5 on its 0.25° lat/lon grid.  These are averaged to forcing values at the beginning of each month using a centered rectangular averaging window between the midpoints of the previous and current months (to enable linear interpolation during Dec. 2024, the dataset extends until 1/2025).  The SST and sea-ice fraction forcings at intermediate times are obtained by linear interpolation.  This method of generating monthly forcings doesn’t produce data overshoots and preserves the annual time-mean of each forcing field, although individual monthly means are not exactly preserved.  We have checked that when used to force inference runs with our emulator, it produces a climate nearly identical to the use of daily forcing data, even in the seasonal sea-ice zones.  Each modeling group should spatially interpolate this monthly forcing to their native grid, e.g. using the conservative regridding option of [xesmf](https://xesmf.readthedocs.io/en/stable/#).
+
+Note that our ERA5-based sea-ice forcing data has small incompatibilities between the land mask and the sea-ice fraction within 0.25° cells on polar coastlines and lake boundaries.  This is native to ERA5, and is even present in the ERA5 data on a reduced Gaussian grid.  The easiest work-around is to limit sea-ice fraction to 1 \- land fraction.  It might be better to fill the resulting ‘lost’ sea-ice into the closest adjacent coastal cells that have sea-ice \+ land fraction \< 1, but the small added benefit is probably not worth the required effort. 
 
 *Don’t explicitly include CO2 as a forcing*
 
@@ -240,16 +249,15 @@ The ESMValTool Team (Righi et al. 2020; Eyring et al., 2020, https://github.com/
 
 16 Jul 2025:	AIMIP-1 protocol finalized and announced
 
-30 Sept 2025:	Deadline for initial submission of results of mandatory case
+30 Nov 2025:	Deadline for initial submission of results of mandatory case
 
-31 Oct. 2025:	Deadline for initial submission of warmed-SST cases
+31 Dec. 2025:	Deadline for initial submission of warmed-SST cases
 
-1 Oct-30 Nov 2025:      	Initial screening and evaluation of results, and time window for correcting submissions  (e.g. data format, unintended NaNs, other errors) 
+1-31 Dec. 2025:      	Initial screening and evaluation of results, and time window for correcting submissions  (e.g. data format, unintended NaNs, other errors) 
 
-15-19 Dec 2025:	Present preliminary findings at AGU Fall Mtg, NOLA. Abstract deadline: 31 July 2025
+15-19 Dec. 2025:	Present preliminary findings at AGU Fall Mtg, NOLA. Abstract deadline: 31 July 2025
 
-1 Jan- 31 Mar 2026      	Write up results for climate science journal submission and potential ML conference submission. 	        
+1 Mar.- 30 Apr. 2026      	Write up results for climate science journal submission and potential ML conference submission. 	        
 
-9-13 March 2026	[CMIP Community Workshop, Kyoto](https://wcrp-cmip.org/event/cmip2026/). Session 29, ‘Can we emulate CMIP now or in the future?’ – another logical venue for presenting AIMIP-1 findings.  
+9-13 Mar. 2026	[CMIP Community Workshop, Kyoto](https://wcrp-cmip.org/event/cmip2026/). Session 29, ‘Can we emulate CMIP now or in the future?’ – another logical venue for presenting AIMIP-1 findings.  
 	Abstract deadline: 13 Aug. 2025
-
