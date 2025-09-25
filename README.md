@@ -2,7 +2,6 @@
 
 Chris Bretherton ([christopherb@allenai.org](mailto:christopherb@allenai.org)), Allen Institute for Artificial Intelligence (Ai2)
 
-The latest dated version is publicly posted on the [AIMIP-1 Github site](https://github.com/ai2cm/AIMIP)  
 Interested in participating?  Email me to join our AIMIP Google Group.  
    
 Based on the 12/2024 [AIMIP proposal](https://docs.google.com/document/d/1oPP_ia4F-vBZJbPJ820JbyAl6B4kHtQT59Sixj9nEEs/edit?usp=sharing) gdoc and valuable feedback from many comments on earlier versions of this doc from around the world (esp. Nikolai Koldunov) and colleagues in Ai2 Climate Modeling (esp. Brian Henn).  Dated versions
