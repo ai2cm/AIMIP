@@ -2,6 +2,7 @@
 
 Chris Bretherton ([christopherb@allenai.org](mailto:christopherb@allenai.org)), Allen Institute for Artificial Intelligence (Ai2)
 
+The latest dated version is publicly posted on the [AIMIP-1 Github site](https://github.com/ai2cm/AIMIP)  
 Interested in participating?  Email me to join our AIMIP Google Group.  
    
 Based on the 12/2024 [AIMIP proposal](https://docs.google.com/document/d/1oPP_ia4F-vBZJbPJ820JbyAl6B4kHtQT59Sixj9nEEs/edit?usp=sharing) gdoc and valuable feedback from many comments on earlier versions of this doc from around the world (esp. Nikolai Koldunov) and colleagues in Ai2 Climate Modeling (esp. Brian Henn).  Dated versions
@@ -18,6 +19,17 @@ V3: Sept. 25, 2025:
 * New submission schedule: Initial submissions due by Nov. 30, 2025 \- this acknowledges that it is taking time for groups to complete a submission in the desired output format.   
 * ERA5 dataset extended to 01/2025 to include 01/01/25 forcings needed for monthly linear interpolation across 12/2024. The link to the Zenodo forcing dataset was updated to point to the extended version.  
 * Suggested work-around for small incompatibilities in ERA5 sea-ice forcing data between land mask and sea-ice fraction in 0.25° cells on land-water boundaries.
+
+V4: Dec. 2, 2025:
+
+* Clarify that submissions can choose between outputting q2m or Td2m  
+* Move submission deadlines back two weeks to accommodate technical issues and required legal approvals for some groups.  
+* Submitted datasets should have CC-BY 4.0 license (the least restrictive choice)  
+* Move initial window for analyzing and possibly correcting baseline submissions to 12/15/2025-1/31/2026  
+* Update about AIMIP-1 presentations at AGU on 18 Dec. 2025 and at the March 2026 CMIP workshop.  
+    
+    
+  
 
 
 **Goals of AIMIP Phase 1 (AIMIP-1)**
@@ -131,14 +143,15 @@ Monthly-mean (Oct. 1978- Dec. 2024\)
 
 The requested outputs from each simulation should be written out in single precision as netcdf (one file for each field).  Zarr stores are less preferable, since they are not CMIP-compliant.  We can convert netcdf submissions to zarr later for analysis convenience.  Netcdfs should use the naming convention:
 
-   CFfieldname\_Amon\_MMM\_aimip\_rXiXpXfX\_gX\_197810-202412.nc for mandatory runs, where:
+   CFfieldname\_Amon\_MMM\_aimip\[-p2k,-p4k\]\_rXiXpXfX\_gX\_197810-202412.nc for mandatory runs, where:
 
 * MMM is your self-selected model name, e.g. ACE. Model name can contain dashes (e.g. MPI-ESM1-2-HR, but not underscores).  To indicate that a submission is a custom model rather than a standard model,  include ‘-custom’ in the model name.  
+* The square bracket means to use ‘aimip’ for baseline submissions, and ‘aimip-p2k’ and ‘aimip-p4k’ for submissions with uniform 2 K and 4 K SST increases  
 * r1i1p1f1 \= ensemble member number, e.g. where r: realisation (i.e. ensemble member), i: initialisation method, p: physics, and f: forcing.   
   * If you only submit one version of the model, name the first ensemble member r1i1p1f1, and only increment the realization (r2, r3, r4, r5) for the other initial condition ensemble members   
   * gX has two options: \`gr\`: regridded data reported on the data provider's preferred target grid, and \`gn\`: data reported on a model's native grid (as requested here). 
 
-Amon denotes AMIP monthly output.  Use Ap2mon and Ap4mon in place of Amon for file names of the warmed-SST runs.
+Amon denotes AMIP monthly output. 
 
 *Horizontal and vertical grid for outputs*
 
@@ -173,13 +186,14 @@ In addition, the following surface fields with dims (time, latitude, longitude) 
 surface pressure \[ps, Pa\] and/or sea-level pressure \[psl, Pa\]  
 surface temperature \[ts, K\] (skin temp. over land or sea ice, SST over ocean, whatever your model uses in grid cells with mixed surface types)  
 2 m air temperature \[tas, K\],   
-2 m dewpoint temperature \[tdas, kg/kg\],   
+2 m dewpoint temperature \[tdas, K\] AND/OR 2 m specific humidity \[huss, kg/kg\]  
 10 m eastward wind \[uas, m/s\],   
 10 m northward wind \[vas, m/s\],   
 Surface precipitation rate \[pr, kg/(m^2 s)\], includes both liquid and frozen \- this should be computed as a time-averaged rate over the month, rather than from a month of daily snapshots, to avoid adding excessive sampling noise.
 
-*Translating dewpoint temperature to specific humidity*  
-ERA5 tabulates 2 m dewpoint temperature instead of specific humidity, but CMIP requests specific humidity.   ECMWF suggests the following formulas for calculating huss from dewpoint temperature (thanks to Stephan Hoyer for pointing this out): [https://prod.ecmwf-forum-prod.compute.cci2.ecmwf.int/t/how-to-calculate-hus-at-2m-huss/1254](https://prod.ecmwf-forum-prod.compute.cci2.ecmwf.int/t/how-to-calculate-hus-at-2m-huss/1254)
+*Translating between dewpoint temperature and specific humidity*  
+ERA5 tabulates 2 m dewpoint temperature instead of specific humidity, but CMIP requests 2 m specific humidity.   Groups may choose which of these two fields they prefer to output, or to output both fields.  
+ECMWF suggests the following formulas for calculating huss from dewpoint temperature (thanks to Stephan Hoyer for pointing this out): [https://prod.ecmwf-forum-prod.compute.cci2.ecmwf.int/t/how-to-calculate-hus-at-2m-huss/1254](https://prod.ecmwf-forum-prod.compute.cci2.ecmwf.int/t/how-to-calculate-hus-at-2m-huss/1254)
 
 Lastly, if you can, please report this time-honored atmospheric circulation metric, used in many measures of mid-latitude atmospheric variability:
 
@@ -197,7 +211,7 @@ Same as monthly outputs, but use your best estimate of an average (00-24 UTC) da
 
 Filename convention for daily netcdf data:
 
-CFfieldname\_day\_MMM\_aimip\_rXiXpXfX\_gX\_19781001[\-](http://-20241231.nc)19791231.nc  
+CFfieldname\_day\_MMM\_aimip\[-p2k,-p4k\]\_rXiXpXfX\_gX\_19781001[\-](http://-20241231.nc)19791231.nc  
    
 This requires an additional storage per single simulation of
 
@@ -205,7 +219,8 @@ This requires an additional storage per single simulation of
 
 i.e. an additional 115 GB of daily output per full model submission of 15 simulations, for 190 GB total.
 
-In a perfect world, we could save daily outputs from the full 46.25 year simulation, but the required storage would get unwieldy unless we dramatically restricted the number of such outputs.    We recognize that this daily data request does not resolve the diurnal cycle, but it does make for a consistent model intercomparison for AI models that may not all predict fields with the same roll-out timestep.  
+In a perfect world, we could save daily outputs from the full 46.25 year simulation, but the required storage would get unwieldy unless we dramatically restricted the number of such outputs.    We recognize that this daily data request does not resolve the diurnal cycle, but it does make for a consistent model intercomparison for AI models that may not all predict fields with the same roll-out timestep.   
+ 
 
 Further considerations
 
@@ -225,11 +240,13 @@ Our vision is that the submissions will be stored and free to download for 1-2 y
 
 Before the core AIMIP-1 paper is published, the authors of any paper, arxiv or conference preprint based on AIMIP-1 outputs must offer coauthorship to all the AIMIP-1 contributing modeling groups before that paper/arxiv/preprint is submitted.
 
+Submitted datasets should have a [Creative Commons CC-BY 4.0 license](https://creativecommons.org/share-your-work/cclicenses/) for unlimited public distribution (this allows others to copy, distribute, adapt, and build upon your work, even commercially, as long as they give you credit for the original creation. It is the most open and least restrictive of the Creative Commons licenses, requiring only that the original author is attributed.)
+
 **Evaluation metrics**
 
 At a minimum, examine (for standard models):
 
-E1: global bias and spatial RMSE of train-period and test-period time means vs. ERA5 reference.  
+E1: global bias and spatial RMSE of train-period and test-period time means (’root mean square bias’ or RMSB) vs. ERA5 reference.  
 E2: train-period and test-period linear trends of these fields  
 E3: Regressions of a subset of these fields on Nino3.4 index
 
@@ -241,22 +258,28 @@ E4: Maps and global means of temporal standard deviation of selected weather var
 
 Other analyses using metrics such as CRPS that explicitly reward a correct level of unforced variability are also welcome.  
 
-Evaluation will also be done with the CMIP Rapid Evaluation Framework (REF, [https://climate-ref.readthedocs.io/en/latest/](https://climate-ref.readthedocs.io/en/latest/)). The REF is a set of Python packages for climate model evaluation and benchmarking using cmorized input data. Its calculations are done by external diagnostic providers, which currently include ESMValTool, ILAMB, IOMB, and PMP. As the REF provides a generic interface for running diagnostics, both the diagnostic providers and the specific diagnostics are open to be expanded upon through community effort upon release in October 2025\. Using the REF allows for easy and direct comparison to AI and non-AI CMIP7 simulations, with an additional package to be developed for specified AI diagnostics targeting physical consistency.  
-The ESMValTool Team (Righi et al. 2020; Eyring et al., 2020, https://github.com/ESMValGroup/ESMValTool) with its expertise in evaluating CMIP models for atmospheric variables (Bock et al., 2020\) and general evaluation diagnostics used in IPCC reports (e.g. Eyring et al., 2021\) will help in implementing both general diagnostics lacking in the first release of the REF, as well as in the development of AI-specific diagnostics. Contact persons for this will be Lisa Bock (DLR) and Bettina Gier (University of Bremen).  
+Evaluation will also be done with the CMIP Rapid Evaluation Framework (REF, [https://climate-ref.readthedocs.io/en/latest/](https://climate-ref.readthedocs.io/en/latest/)). The REF is a set of Python packages for climate model evaluation and benchmarking using [CMOR](https://github.com/PCMDI/CMOR)ized input data. Its calculations are done by external diagnostic providers, which currently include [ESMValTool](https://esmvaltool.org/), [ILAMB](https://www.ilamb.org/), IOMB, and [PMP](https://pcmdi.github.io/pcmdi_metrics/). As the REF provides a generic interface for running diagnostics, both the diagnostic providers and the specific diagnostics are open to be expanded upon through community effort upon release in October 2025\. Using the REF allows for easy and direct comparison to AI and non-AI CMIP7 simulations, with an additional package to be developed for specified AI diagnostics targeting physical consistency.
+
+The ESMValTool Team (Righi et al. 2020; Eyring et al., 2020, https://github.com/ESMValGroup/ESMValTool) with its expertise in evaluating CMIP models for atmospheric variables (Bock et al., 2020\) and general evaluation diagnostics used in IPCC reports (e.g. Eyring et al., 2021\) will help in implementing both general diagnostics lacking in the first release of the REF, as well as in the development of AI-specific diagnostics. Contact persons for this will be Lisa Bock (DLR) and Bettina Gier (University of Bremen).
+
+The PMP Team (Lee et al. 2024, [https://github.com/PCMDI/pcmdi\_metrics](https://github.com/PCMDI/pcmdi_metrics)) has released [demos](https://pcmdi.github.io/pcmdi_metrics/demo-notebooks.html) in Jupyter Notebook format, which can be also useful for AI model evaluation. The contact person for this will be Jiwoo Lee (LLNL, lee1043@llnl.gov).  
    
 **Proposed timeline**
 
 16 Jul 2025:	AIMIP-1 protocol finalized and announced
 
-30 Nov 2025:	Deadline for initial submission of results of mandatory case
+15 Dec. 2025:	Soft deadline for initial submission of mandatory case results (we will start analyzing submitted results at this time)
 
-31 Dec. 2025:	Deadline for initial submission of warmed-SST cases
+15 Jan. 2025:	Deadline for initial submission of warmed-SST cases
 
-1-31 Dec. 2025:      	Initial screening and evaluation of results, and time window for correcting submissions  (e.g. data format, unintended NaNs, other errors) 
+16 Dec.-1 Feb. 2025:      	Initial screening and evaluation of results, and time window for correcting submissions  (e.g. data format, unintended NaNs, other errors) 
 
-15-19 Dec. 2025:	Present preliminary findings at AGU Fall Mtg, NOLA. Abstract deadline: 31 July 2025
+18 Dec. 2025:	Henn et al. talk ‘[GC42A-01AIMIP Phase 1: An intercomparison of AI climate models](https://agu.confex.com/agu/agu25/meetingapp.cgi/Paper/1990353)’ at AGU Fall Mtg, New Orleans 
 
 1 Mar.- 30 Apr. 2026      	Write up results for climate science journal submission and potential ML conference submission. 	        
 
-9-13 Mar. 2026	[CMIP Community Workshop, Kyoto](https://wcrp-cmip.org/event/cmip2026/). Session 29, ‘Can we emulate CMIP now or in the future?’ – another logical venue for presenting AIMIP-1 findings.  
-	Abstract deadline: 13 Aug. 2025
+9-13 Mar. 2026	[CMIP Community Workshop, Kyoto](https://wcrp-cmip.org/event/cmip2026/). Bretherton et al. talk Session 29, ‘'AIMIP Phase 1: A CMIP-friendly AMIP-style intercomparison of AI climate models'’
+
+**Potentially Useful Reference**
+
+Ullrich, P. A., E.A. Barnes, W. D. Collins, K. Dagon, S. Duan, J. Elms, J. Lee, L.R. Leung, D. Lu, M.J. Molina, and T. A. O’Brien, T.A., 2025: Recommendations for comprehensive and independent evaluation of machine learning‐based Earth system models. Journal of Geophysical Research: Machine Learning and Computation, 2, e2024JH000496, [doi: 10.1029/2024JH000496](https://doi.org/10.1029/2024JH000496)
