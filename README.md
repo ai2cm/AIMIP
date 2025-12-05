@@ -26,10 +26,12 @@ V4: Dec. 2, 2025:
 * Move submission deadlines back two weeks to accommodate technical issues and required legal approvals for some groups.  
 * Submitted datasets should have CC-BY 4.0 license (the least restrictive choice)  
 * Move initial window for analyzing and possibly correcting baseline submissions to 12/15/2025-1/31/2026  
-* Update about AIMIP-1 presentations at AGU on 18 Dec. 2025 and at the March 2026 CMIP workshop.  
+* Update about AIMIP-1 presentations at AGU on 18 Dec. 2025 and at the March 2026 CMIP workshop.
+
+V5: Dec. 5, 2025:
+
+* Provide guidance for the directory structure of AIMIP-1 submissions.
     
-    
-  
 
 
 **Goals of AIMIP Phase 1 (AIMIP-1)**
@@ -221,6 +223,15 @@ i.e. an additional 115 GB of daily output per full model submission of 15 simula
 
 In a perfect world, we could save daily outputs from the full 46.25 year simulation, but the required storage would get unwieldy unless we dramatically restricted the number of such outputs.    We recognize that this daily data request does not resolve the diurnal cycle, but it does make for a consistent model intercomparison for AI models that may not all predict fields with the same roll-out timestep.   
  
+
+Directory structure
+
+Following CMIP/ESGF [conventions](https://zenodo.org/records/15670624), we propose using the following directory structure when submitting data to the DKRZ store (see below) for each required variable and time frequency file. While this structure is not strictly required, it will aid in keeping the intercomparison organized.
+
+* directory: {institute}/{model\_name}/{experiment}/{ensemble\_member}/{frequency}/{variable}/{grid}/{version}
+* filename: {variable}\_{frequency}\_{model\_name}\_{experiment}\_{ensemble\_member}\_{grid}\_{start\_time}-{end\_time}.nc
+
+Where {experiment} is ‘aimip’, ‘aimip-p2k’, or ‘aimip-p4k’, {frequency} is ‘Amon’ or ‘day’, and {version} is a date-based version identifier (e.g., ‘v20251130’). For example, for the Ai2 ACE2-ERA5 model and primary ‘aimip’ experiment, a directory for the daily air temperature file on the native grid would be: ‘Ai2/ACE2-ERA5/aimip/r1i1p1f1/day/ta/gn/v20251130/’, and one of the files in that directory would be ‘ta\_day\_ACE2-ERA5\_aimip\_r1i1p1f1\_gn\_19781001-19791231.nc’.
 
 Further considerations
 
