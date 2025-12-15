@@ -8,11 +8,11 @@ The following submissions have been made to AIMIP.
 
 | organization name | model name | references | code | experiments[^a] | submitted temporal frequency[^b] | submitted horizontal grid | submitted vertical grid | description |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ArchesWeather/INRIA | ArchesWeather | [^1],[^2],[^3] | https://github.com/gcouairon/ArchesWeather | 'aimip' | daily, monthly | 1°x1° | 7 pressure levels | --- |
-| ArchesWeather/INRIA | ArchesWeatherGen | [^1],[^2],[^3] | https://github.com/gcouairon/ArchesWeather | 'aimip' | monthly | 1°x1° | 7 pressure levels | --- |
+| ArchesWeather/INRIA | ArchesWeather | [^1], [^2], [^3] | https://github.com/gcouairon/ArchesWeather | 'aimip' | daily, monthly | 1°x1° | 7 pressure levels | --- |
+| ArchesWeather/INRIA | ArchesWeatherGen | [^1], [^2], [^3] | https://github.com/gcouairon/ArchesWeather | 'aimip' | monthly | 1°x1° | 7 pressure levels | --- |
 | Ai2 | ACE2.1-ERA5 | [^4] | https://github.com/ai2cm/ace | 'aimip', 'aimip-p2k', 'aimip-p4k' | daily, monthly | 1°x1° | 13 pressure levels ('gr'), regridded from native 8 model layers via ML that are also submitted ('gn') | ACE2.1-ERA5 is similar to ACE2-ERA5 described in [4], except for the following: 1) AIMIP training/evaluation periods, 2) CO<sub>2</sub> is not a forcing feature, 3) near-surface variables ('tas', 'huss', 'vas', 'uas') are no longer prognostic, and 4) layer norm used instead of instance norm in SFNO blocks |
-| Google Research | NeuralGCM | [^5],[^6] | https://github.com/neuralgcm/neuralgcm | 'aimip', 'aimip-p2k', 'aimip-p4k' | daily, monthly | 2.8°x2.8° | 7 pressure levels | --- |
-| Google Research | NeuralGCM-HRD | [^5],[^6] | https://github.com/neuralgcm/neuralgcm | 'aimip', 'aimip-p2k', 'aimip-p4k' | daily, monthly | 1°x1° | 7 pressure levels | NeuralGCM with high resolution decoder produces 1° resolution output |
+| Google Research | NeuralGCM | [^5], [^6] | https://github.com/neuralgcm/neuralgcm | 'aimip', 'aimip-p2k', 'aimip-p4k' | daily, monthly | 2.8°x2.8° | 7 pressure levels | --- |
+| Google Research | NeuralGCM-HRD | [^5], [^6] | https://github.com/neuralgcm/neuralgcm | 'aimip', 'aimip-p2k', 'aimip-p4k' | daily, monthly | 1°x1° | 7 pressure levels | NeuralGCM with high resolution decoder produces 1° resolution output |
 | NVIDIA | cBottle | [^7] | https://github.com/NVlabs/cBottle | 'aimip' | daily, monthly | 0.25°x0.25° | pressure levels | --- |
 | UMD-PARETO | MD-1p5 | --- | https://github.com/kjhall01/monthly-diffusion | 'aimip', 'aimip-p2k', 'aimip-p4k' | monthly | 1°x1° | 7 pressure levels | --- |
 
