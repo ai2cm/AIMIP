@@ -17,21 +17,11 @@ The following submissions have been made to AIMIP.
 | UMD-PARETO | MD-1p5 | --- | https://github.com/kjhall01/monthly-diffusion | 'aimip', 'aimip-p2k', 'aimip-p4k' | monthly | 1°x1° | 7 pressure levels | --- |
 
 [^a]: 'aimip', 'aimip-p2k', and 'aimip-p4k' experiments are the main AIMIP simulation and the +2 K and +4 K SST perturbation experiments, respectively.
-
 [^b]: 'monthly' indicates monthly average output from Oct. 1, 1978 to December 31, 2024; 'daily' indicates daily average output over 1) Oct. 1, 1978 to December 31, 1979 and 2) January 1, 2024 to December 31, 2024.
-
-## References:
-
 [^1] https://arxiv.org/html/2405.14527v1
-
 [^2] https://arxiv.org/abs/2412.12971
-
 [^3] https://arxiv.org/abs/2509.15942
-
 [^4] Watt-Meyer, O., Henn, B., McGibbon, J. et al. ACE2: accurately learning subseasonal to decadal atmospheric variability and forced responses. npj Clim Atmos Sci 8, 205 (2025). https://doi.org/10.1038/s41612-025-01090-0
-
 [^5] Kochkov, D., Yuval, J., Langmore, I. et al. Neural general circulation models for weather and climate. Nature 632, 1060–1066 (2024). https://doi.org/10.1038/s41586-024-07744-y
-
 [^6] https://arxiv.org/abs/2412.11973
-
 [^7] https://arxiv.org/abs/2505.06474
