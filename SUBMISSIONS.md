@@ -14,7 +14,7 @@ The following submissions have been made to AIMIP.
 | Google Research | NeuralGCM | [^5], [^6] | https://github.com/neuralgcm/neuralgcm | 'aimip', 'aimip-p2k', 'aimip-p4k' | daily, monthly | 2.8°x2.8° | 7 pressure levels | --- |
 | Google Research | NeuralGCM-HRD | [^5], [^6] | https://github.com/neuralgcm/neuralgcm | 'aimip', 'aimip-p2k', 'aimip-p4k' | daily, monthly | 1°x1° | 7 pressure levels | NeuralGCM with high resolution decoder produces 1° resolution output |
 | NVIDIA | cBottle | [^7] | https://github.com/NVlabs/cBottle | 'aimip' | daily, monthly | 0.25°x0.25° | pressure levels | --- |
-| UMD-PARETO | MD-1p5 | --- | https://github.com/kjhall01/monthly-diffusion | 'aimip', 'aimip-p2k', 'aimip-p4k' | monthly | 1°x1° | 7 pressure levels | --- |
+| UMD-PARETO | MD-1p5 | --- | --- | 'aimip', 'aimip-p2k', 'aimip-p4k' | monthly | 1°x1° | 7 pressure levels | --- |
 
 [^a]: 'aimip', 'aimip-p2k', and 'aimip-p4k' experiments are the main AIMIP simulation and the +2 K and +4 K SST perturbation experiments, respectively.
 [^b]: 'monthly' indicates monthly average output from Oct. 1, 1978 to December 31, 2024; 'daily' indicates daily average output over 1) Oct. 1, 1978 to December 31, 1979 and 2) January 1, 2024 to December 31, 2024.
