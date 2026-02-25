@@ -393,3 +393,40 @@ def transfer_attrs(src: xr.Dataset, dst: xr.Dataset) -> xr.Dataset:
             dst[var] = dst[var].assign_attrs(src[var].attrs)
     dst = dst.assign_attrs(src.attrs)
     return dst
+
+def compute_huss_from_tdas(tdas: xr.DataArray, ps: xr.DataArray) -> xr.DataArray:
+    """Compute huss from tdas.
+    
+    Compute near-surface specific humidity ('huss') from near-surface dewpoint temperature
+    ('tdas') and surface pressure ('ps'). Needed because ERA5 data provides 'tdas', whereas
+    CMIP requires 'huss'. See below for formula:
+    https://prod.ecmwf-forum-prod.compute.cci2.ecmwf.int/t/how-to-calculate-hus-at-2m-huss/1254
+
+    Args:
+        tdas: near-surface dewpoint temperature in K.
+        ps: surface pressure in Pa.
+        
+    Returns:
+        Near-surface specific humidity in kg/kg
+    """
+    Rdry = 287.0597
+    Rvap = 461.5250
+    a1 = 611.21
+    a2 = 273.16
+    a3 = 17.502
+    a4 = 32.19
+    E = a1 * np.exp(a3 * (tdas - a2) / (tdas - a4)) # saturation vapor pressure at dewpoint (Teten's formula)
+    huss = (Rdry / Rvap) * E / (ps - ((1 - Rdry / Rvap) * E))
+    huss = huss.assign_attrs({'long_name': 'near-surface specific humidity', 'units': '1'})
+    return huss
+
+def convert_tdas_to_huss(ds: xr.Dataset) -> xr.Dataset:
+    if 'tdas' and 'ps' in ds.data_vars and 'huss' not in ds.data_vars:
+        print("Converting 'tdas' to 'huss'.")
+        ds['huss'] = compute_huss_from_tdas(ds['tdas'], ds['ps'])
+        return ds.drop_vars(['tdas'])
+    elif 'huss' not in ds.data_vars:
+        print("No 'tdas' or 'ps' available to calculate 'huss'.")
+    else:
+        print("'huss' already present in dataset.")
+    return ds
