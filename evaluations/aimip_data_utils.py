@@ -430,3 +430,19 @@ def convert_tdas_to_huss(ds: xr.Dataset) -> xr.Dataset:
     else:
         print("'huss' already present in dataset.")
     return ds
+
+def compute_time_mean(ds: xr.Dataset, start: str, end: str, time_dim_name: str='time') -> xr.Dataset:
+    time_subset = ds.sel(**{time_dim_name: slice(start, end)})
+    with xr.set_options(keep_attrs=True):
+        return time_subset.mean(time_dim_name)
+
+def compute_rms(field: xr.Dataset, lat_dim: str='lat', lon_dim: str='lon') -> xr.Dataset:
+    weights = np.cos(np.deg2rad(field[lat_dim]))
+    rms = np.sqrt((field ** 2).weighted(weights).mean(dim=[lat_dim, lon_dim]))
+    rms = transfer_attrs(field, rms)
+    return rms
+
+def compute_error(pred: xr.Dataset, target: xr.Dataset) -> xr.Dataset:
+    error = pred - target
+    error = transfer_attrs(pred, error)
+    return error
