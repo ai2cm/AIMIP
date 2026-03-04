@@ -23,6 +23,8 @@ FILE_TEMPLATES = {
     'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_ACE2-ERA5_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc',
     'ArchesWeather-V2':
     'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202501.nc',
+    'ArchesWeather-V2-perturbed-sst':
+    'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_aimip_r{i_r}i1p1f1_{grid}_197810-202501.nc',
     'ArchesWeatherGen-V2':
     'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeatherGen_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202501.nc',
     'NeuralGCM':
@@ -230,6 +232,120 @@ ERA5_1DEG = ExperimentSubmission(
     label=None,
 )
 
+AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
+    ExperimentSubmission(
+        submission_dir='Ai2/ACE2-1-ERA5',
+        experiment_name='aimip-p2k',
+        file_template=FILE_TEMPLATES['ACE2-1-ERA5'],
+        grid='gr',
+        grid_mapping={
+            'huss': 'gn',
+            'pr': 'gn',
+            'ps': 'gn',
+            'tas': 'gn',
+            'ts': 'gn',
+            'uas': 'gn',
+            'vas': 'gn',   
+        },
+        label='v20251130'
+    ),
+    ExperimentSubmission(
+        submission_dir='ArchesWeather/ArchesWeather-V2',
+        experiment_name='aimip-p2k',
+        file_template=FILE_TEMPLATES['ArchesWeather-V2-perturbed-sst'],
+        label=None,
+        renames={'ts': 'tos'},
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        submission_dir='ArchesWeather/ArchesWeatherGen-V2',
+        experiment_name='aimip-p2k',
+        file_template=FILE_TEMPLATES['ArchesWeatherGen-V2'],
+        label=None,
+        renames={'ts': 'tos'},
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        submission_dir='Google/NeuralGCM',
+        experiment_name='aimip-p2k',
+        file_template=FILE_TEMPLATES['NeuralGCM'],
+        label='v20251209',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        submission_dir='Google/NeuralGCM-HRD',
+        experiment_name='aimip-p2k',
+        file_template=FILE_TEMPLATES['NeuralGCM-HRD'],
+        label='v20251209',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        submission_dir='UMD-PARETO/MD-1p5',
+        experiment_name='aimip-2k',
+        grid='gr',
+        file_template=FILE_TEMPLATES['MD-1p5'],
+        label='v20251217',
+        fix_zg=True,
+    ),
+]
+
+AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
+    ExperimentSubmission(
+        submission_dir='Ai2/ACE2-1-ERA5',
+        experiment_name='aimip-p4k',
+        file_template=FILE_TEMPLATES['ACE2-1-ERA5'],
+        grid='gr',
+        grid_mapping={
+            'huss': 'gn',
+            'pr': 'gn',
+            'ps': 'gn',
+            'tas': 'gn',
+            'ts': 'gn',
+            'uas': 'gn',
+            'vas': 'gn',   
+        },
+        label='v20251130'
+    ),
+    ExperimentSubmission(
+        submission_dir='ArchesWeather/ArchesWeather-V2',
+        experiment_name='aimip-p4k',
+        file_template=FILE_TEMPLATES['ArchesWeather-V2-perturbed-sst'],
+        label=None,
+        renames={'ts': 'tos'},
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        submission_dir='ArchesWeather/ArchesWeatherGen-V2',
+        experiment_name='aimip-p4k',
+        file_template=FILE_TEMPLATES['ArchesWeatherGen-V2'],
+        label=None,
+        renames={'ts': 'tos'},
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        submission_dir='Google/NeuralGCM',
+        experiment_name='aimip-p4k',
+        file_template=FILE_TEMPLATES['NeuralGCM'],
+        label='v20251205',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        submission_dir='Google/NeuralGCM-HRD',
+        experiment_name='aimip-p4k',
+        file_template=FILE_TEMPLATES['NeuralGCM-HRD'],
+        label='v20251205',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        submission_dir='UMD-PARETO/MD-1p5',
+        experiment_name='aimip-4k',
+        grid='gr',
+        file_template=FILE_TEMPLATES['MD-1p5'],
+        label='v20251217',
+        fix_zg=True,
+    ),
+]
+
 EVALUATION_VARIABLES = [
     EvaluationVariable(
         standard_name='specific_humidity',
@@ -326,13 +442,14 @@ EVALUATION_VARIABLES = [
 def open_variable_from_path(
     path: str,
     evaluation_variable: EvaluationVariable,
-    experiment_submission: ExperimentSubmission
+    experiment_submission: ExperimentSubmission,
+    template: xr.Dataset,
 ) -> tuple[xr.Dataset, bool]:
     try:
         variable_dataset = xr.open_dataset(path, chunks={})
     except FileNotFoundError:
         print(f"Not found: {path}")
-        variable_dataset = xr.Dataset()
+        variable_dataset = xr.full_like(template, fill_value=np.nan)
         missing = True
     else:
         print(path)
@@ -363,12 +480,15 @@ def open_aimip_data(
         for evaluation_variable in evaluation_variables:
             print(evaluation_variable.standard_name)
             realization_datasets = []
+            template = xr.Dataset()
             for i_r in range(1, n_realizations + 1):
                 variable_path = experiment_submission.get_variable_path(evaluation_variable, i_r, table)
-                realization_dataset, missing = open_variable_from_path(variable_path, evaluation_variable, experiment_submission)
+                realization_dataset, missing = open_variable_from_path(variable_path, evaluation_variable, experiment_submission, template)
                 realization_datasets.append(realization_dataset.expand_dims({'realization': [i_r]}))
                 if missing:
                     submission_missing_files.append(variable_path)
+                else:
+                    template = realization_dataset
             evaluation_variable_dataset = xr.concat(realization_datasets, dim='realization', compat='no_conflicts', join='inner')
             evaluation_variable_datasets.append(evaluation_variable_dataset)
         experiment_submission_dataset = xr.merge(evaluation_variable_datasets, compat='no_conflicts', join='outer')
