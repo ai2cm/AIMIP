@@ -1,7 +1,9 @@
 import xarray as xr
 import numpy as np
 import xesmf
+import healpy as hp
 import os
+from copy import deepcopy
 import dataclasses
 from typing import Literal
 
@@ -27,6 +29,7 @@ FILE_TEMPLATES = {
     'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_aimip_r{i_r}i1p1f1_{grid}_197810-202501.nc',
     'ArchesWeatherGen-V2':
     'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeatherGen_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202501.nc',
+    'DLESyM': 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_DLESyM_{experiment_name}_r{i_r}i1p1f1_{grid}_19831016-20241216.nc',
     'NeuralGCM':
     'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_NeuralGCM_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc',
     'NeuralGCM-HRD':
@@ -46,7 +49,7 @@ class EvaluationVariable:
     long_name: str
     units: str 
     standard_pressure_level_indexer: dict[str, list[float]] | None=None
-    interpolate_to_pressure_levels: bool=True
+    drop_singleton_pressure_coord: bool=False
 
     def __post_init__(self):
         if self.standard_pressure_level_indexer is not None and len(self.standard_pressure_level_indexer) > 1:
@@ -62,7 +65,7 @@ class EvaluationVariable:
             ds[self.short_name].attrs["long_name"] = self.long_name
         return ds
 
-    def to_standard_pressure_levels(self, ds: xr.Dataset) -> xr.Dataset:
+    def to_standard_pressure_levels(self, ds: xr.Dataset, interpolate_to_pressure_levels: bool) -> xr.Dataset:
         """If necessary, select and interpolate to standard evaluation levels."""
         if self.standard_pressure_level_indexer is not None:
             pressure_dim_name = list(self.standard_pressure_level_indexer.keys())[0]
@@ -74,15 +77,18 @@ class EvaluationVariable:
                     or 
                     max(standard_pressure_levels) > ds[pressure_dim_name].max().item()
                 ):
-                    raise ValueError("Cannot extrapolate to standard pressure levels.")
+                    print("Cannot extrapolate to standard pressure levels -- values left missing.")
+                if interpolate_to_pressure_levels:
+                    ds_out = ds.interp({pressure_dim_name: standard_pressure_levels}, method='linear')
                 else:
-                    if self.interpolate_to_pressure_levels:
-                        ds_out = ds.interp({pressure_dim_name: standard_pressure_levels}, method='linear')
-                    else:
-                        ds_out = ds.sel({pressure_dim_name: standard_pressure_levels}, method='nearest')
-                    if ds_out.sizes[pressure_dim_name] == 1:
-                        ds_out = ds_out.squeeze().drop_vars(pressure_dim_name)
-                    return ds_out
+                    ds_out = (
+                        ds
+                        .sel({pressure_dim_name: standard_pressure_levels}, method='nearest')
+                        .drop_duplicates(pressure_dim_name)
+                    )
+                if ds_out.sizes[pressure_dim_name] == 1 and self.drop_singleton_pressure_coord:
+                    ds_out = ds_out.squeeze().drop_vars(pressure_dim_name)
+                return ds_out
             else:
                 print(f'Pressure levels specified but no pressure dimension for {self.standard_name}')
         return ds
@@ -195,6 +201,13 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         fix_zg=True,
     ),
     ExperimentSubmission(
+        submission_dir='DLESyM/DLESyM',
+        experiment_name='aimip',
+        grid='gn',
+        file_template=FILE_TEMPLATES['DLESyM'],
+        label='v20250825',
+    ),
+    ExperimentSubmission(
         submission_dir='Google/NeuralGCM',
         experiment_name='aimip',
         file_template=FILE_TEMPLATES['NeuralGCM'],
@@ -266,6 +279,13 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         fix_zg=True,
     ),
     ExperimentSubmission(
+        submission_dir='DLESyM/DLESyM',
+        experiment_name='aimip-p2k',
+        grid='gn',
+        file_template=FILE_TEMPLATES['DLESyM'],
+        label='v20250825',
+    ),
+    ExperimentSubmission(
         submission_dir='Google/NeuralGCM',
         experiment_name='aimip-p2k',
         file_template=FILE_TEMPLATES['NeuralGCM'],
@@ -321,6 +341,13 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
+    ),
+    ExperimentSubmission(
+        submission_dir='DLESyM/DLESyM',
+        experiment_name='aimip-p4k',
+        grid='gn',
+        file_template=FILE_TEMPLATES['DLESyM'],
+        label='v20250825',
     ),
     ExperimentSubmission(
         submission_dir='Google/NeuralGCM',
@@ -435,7 +462,7 @@ EVALUATION_VARIABLES = [
         short_name='zg',
         units='m',
         standard_pressure_level_indexer={'plev': [5e4]}, # 500 hPa height only
-        interpolate_to_pressure_levels=False
+        drop_singleton_pressure_coord=True
     ),
 ]
 
@@ -454,12 +481,18 @@ def open_variable_from_path(
     else:
         print(path)
         missing = False
+        if evaluation_variable.short_name == 'zg':
+            pressure_interp = False
+        elif evaluation_variable.short_name == 'ta' and experiment_submission.submission_dir == 'DLESyM/DLESyM':
+            pressure_interp = False
+        else:
+            pressure_interp = True
         variable_dataset = (
             variable_dataset
             .pipe(experiment_submission.rename_variable)
             .pipe(experiment_submission.apply_zg_fix)
             .pipe(evaluation_variable.validate_metadata)
-            .pipe(evaluation_variable.to_standard_pressure_levels)
+            .pipe(evaluation_variable.to_standard_pressure_levels, pressure_interp)
         )
     # singleton height coordinate for surface variables causes xarray merge conflicts
     variable_dataset = variable_dataset.drop_vars("height", errors="ignore") 
@@ -495,6 +528,52 @@ def open_aimip_data(
         experiment_submission_datasets[experiment_submission.name] =  experiment_submission_dataset
         missing_files[experiment_submission.name] = submission_missing_files
     return experiment_submission_datasets, missing_files
+
+def add_latlon_to_dlesym(
+    dlesm_ds: xr.Dataset,
+    nside: int=64,
+    face_dim: str='face', 
+    width_dim: str='width', 
+    height_dim: str='height', 
+    lat_name: str='lat',
+    lon_name: str='lon',
+    ipix_name: str='i',    
+) -> xr.Dataset:
+    
+    """Add lat and lon variables to the DLESyM HEALPix dataset.
+    
+    DLESyM dataset is missing lat/lon coords; it has only face/height/width coords.
+    With healpy, compute these variables from the sizes of these coords, and add
+    them to the dataset as variables (not coords). Also stack the dataset along
+    a cell dimension for easier regridding.
+    """
+
+    dlesm_ds_out = deepcopy(dlesm_ds) # don't mutate input
+
+    assert dlesm_ds_out.sizes[height_dim] == nside, "height dim size"
+    assert dlesm_ds_out.sizes[width_dim] == nside, "width dim size"
+    assert dlesm_ds_out.sizes[face_dim] == 12, "face dim size"
+
+    F, Y, X = xr.broadcast(
+        dlesm_ds_out[face_dim], dlesm_ds_out[height_dim], dlesm_ds_out[width_dim],
+    )
+    ipix = hp.xyf2pix(64, X.values, Y.values, F.values, nest=False)
+    lon, lat = hp.pix2ang(nside, ipix, lonlat=True, nest=False)
+
+    # for some reason this is needed to map to the DLESyM variables properly
+    lon = lon[:, ::-1, ::-1]
+    lat = lat[:, ::-1, ::-1]
+
+    # assign as variables
+    dlesm_ds_out[lon_name] = xr.DataArray(lon, dims=[face_dim, width_dim, height_dim])
+    dlesm_ds_out[lat_name] = xr.DataArray(lat, dims=[face_dim, width_dim, height_dim])
+    dlesm_ds_out[ipix_name] = xr.DataArray(ipix, dims=[face_dim, width_dim, height_dim])
+
+    # stack along ipix dim
+    dlesm_ds_out = dlesm_ds_out.stack({"cell": [face_dim, width_dim, height_dim]})
+    dlesm_ds_out = dlesm_ds_out.sortby(ipix_name)
+    dlesm_ds_out = dlesm_ds_out.drop_vars(["cell", face_dim, width_dim, height_dim]).rename({"cell": ipix_name})
+    return dlesm_ds_out
 
 def regrid_dataset(src: xr.Dataset, target_grid: xr.Dataset, sample_dims: list[str] | None=None, **regridder_kwargs) -> xr.Dataset:
     """Regrid dataset to target grid. Sample dimensions are those not part of the grid."""
