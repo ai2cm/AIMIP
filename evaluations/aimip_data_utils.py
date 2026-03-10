@@ -20,26 +20,43 @@ EVALUATION_PRESSURE_LEVELS = [
     5000.,
 ]
 
+ACE_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_ACE2-ERA5_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc'
+ARCHES_WEATHER_AIMIP_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202501.nc'
+ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_aimip_r{i_r}i1p1f1_{grid}_197810-202501.nc'
+ARCHES_WEATHER_GEN_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeatherGen_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202501.nc'
+DLESYM_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_DLESyM_{experiment_name}_r{i_r}i1p1f1_{grid}_19831016-20241216.nc'
+NEURAL_GCM_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_NeuralGCM_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc'
+NEURAL_GCM_HRD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_NeuralGCM-HRD_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc'
+CBOTTLE_FILE_TEMPLATE = 'r1i1p{i_r}f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_cBottle-1-3_{experiment_name}_r1i1p{i_r}f1_{grid}_197810-202412.nc'
+MD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_MD-1p5_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc'
+ERA5_FILE_TEMLATE = 'mon_1deg/native6_ERA5_an_v1_Amon_{varname}_1978-2024.nc'
+
 FILE_TEMPLATES = {
-    'ACE2-1-ERA5': 
-    'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_ACE2-ERA5_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc',
-    'ArchesWeather-V2':
-    'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202501.nc',
-    'ArchesWeather-V2-perturbed-sst':
-    'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_aimip_r{i_r}i1p1f1_{grid}_197810-202501.nc',
-    'ArchesWeatherGen-V2':
-    'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeatherGen_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202501.nc',
-    'DLESyM': 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_DLESyM_{experiment_name}_r{i_r}i1p1f1_{grid}_19831016-20241216.nc',
-    'NeuralGCM':
-    'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_NeuralGCM_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc',
-    'NeuralGCM-HRD':
-    'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_NeuralGCM-HRD_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc',
-    'cBottle':
-    'r1i1p{i_r}f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_cBottle-1-3_{experiment_name}_r1i1p{i_r}f1_{grid}_197810-202412.nc',
-    'MD-1p5':
-    'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_MD-1p5_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc',
-    'ERA5_monthly_1deg':
-    'mon_1deg/native6_ERA5_an_v1_Amon_{varname}_1978-2024.nc',
+    'ACE2.1-ERA5-aimip': ACE_FILE_TEMPLATE,
+    'ACE2.1-ERA5-aimip-p2k': ACE_FILE_TEMPLATE,
+    'ACE2.1-ERA5-aimip-p4k': ACE_FILE_TEMPLATE,
+    'ArchesWeather-V2-aimip': ARCHES_WEATHER_AIMIP_FILE_TEMPLATE,
+    'ArchesWeather-V2-aimip-p2k': ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE,
+    'ArchesWeather-V2-aimip-p4k': ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE,
+    'ArchesWeatherGen-V2-aimip': ARCHES_WEATHER_GEN_FILE_TEMPLATE,
+    'ArchesWeatherGen-V2-aimip-p2k': ARCHES_WEATHER_GEN_FILE_TEMPLATE,
+    'ArchesWeatherGen-V2-aimip-p4k': ARCHES_WEATHER_GEN_FILE_TEMPLATE,
+    'DLESyM-aimip': DLESYM_FILE_TEMPLATE,
+    'DLESyM-aimip-p2k': DLESYM_FILE_TEMPLATE,
+    'DLESyM-aimip-p4k': DLESYM_FILE_TEMPLATE,
+    'NeuralGCM-aimip': NEURAL_GCM_FILE_TEMPLATE,
+    'NeuralGCM-aimip-p2k': NEURAL_GCM_FILE_TEMPLATE,
+    'NeuralGCM-aimip-p4k': NEURAL_GCM_FILE_TEMPLATE,
+    'NeuralGCM-HRD-aimip': NEURAL_GCM_HRD_FILE_TEMPLATE,
+    'NeuralGCM-HRD-aimip-p2k': NEURAL_GCM_HRD_FILE_TEMPLATE,
+    'NeuralGCM-HRD-aimip-p4k': NEURAL_GCM_HRD_FILE_TEMPLATE,
+    'cBottle1.3-aimip': CBOTTLE_FILE_TEMPLATE,
+    'cBottle1.3-aimip-p2k': CBOTTLE_FILE_TEMPLATE,
+    'cBottle1.3-aimip-p4k': CBOTTLE_FILE_TEMPLATE,
+    'MD1.5-aimip': MD_FILE_TEMPLATE,
+    'MD1.5-aimip-2k': MD_FILE_TEMPLATE,
+    'MD1.5-aimip-4k': MD_FILE_TEMPLATE,
+    'ERA5': ERA5_FILE_TEMLATE,
 }
 
 @dataclasses.dataclass
@@ -95,29 +112,40 @@ class EvaluationVariable:
  
 @dataclasses.dataclass
 class ExperimentSubmission:
+    model_name: str
     submission_dir: str
-    file_template: str
-    experiment_name: str | None
+    experiment_name: str
     label: str | None
     grid: Literal['gr', 'gn']='gn'
     grid_mapping: dict[str, str] | None=None
     renames: dict[str, str] | None=None
-    fix_zg: bool = False
+    fix_zg: bool=False
     data_root: str=DATA_ROOT
 
     def __post_init__(self):
-        if self.label is None:
-            self.label = ''
         if self.experiment_name is None:
             self.experiment_name = ''
+        if self.label is None:
+            self.label = ''
         if self.renames is None:
             self.renames = {}
         if self.grid_mapping is None:
             self.grid_mapping = {}
-        
+
+    @property
+    def file_template(self) -> str:
+        return FILE_TEMPLATES[self.experiment_submission_name]
+
     @property
     def name(self) -> str:
-        return self.submission_dir
+        return self.model_name
+
+    @property
+    def experiment_submission_name(self) -> str:
+        if self.experiment_name:
+            return f"{self.model_name}-{self.experiment_name}"
+        else:
+            return self.model_name
 
     @property
     def reverse_rename(self) -> dict:
@@ -136,13 +164,13 @@ class ExperimentSubmission:
         table: str,
     ) -> str:
         if variable.short_name in self.renames:
-            variable_short_name = self.renames[variable.short_name]
+            variable_submission_name = self.renames[variable.short_name]
         else:
-            variable_short_name = variable.short_name
+            variable_submission_name = variable.short_name
         file_format = self.file_template.format(
             i_r=i_r,
             table=table,
-            varname=variable_short_name,
+            varname=variable_submission_name,
             grid=self.get_grid_for_variable(variable.short_name),
             label=self.label,
             experiment_name=self.experiment_name,
@@ -169,9 +197,9 @@ class ExperimentSubmission:
 
 AIMIP_EXPERIMENT_SUBMISSIONS = [
     ExperimentSubmission(
+        model_name='ACE2.1-ERA5',
         submission_dir='Ai2/ACE2-1-ERA5',
         experiment_name='aimip',
-        file_template=FILE_TEMPLATES['ACE2-1-ERA5'],
         grid='gr',
         grid_mapping={
             'huss': 'gn',
@@ -185,71 +213,71 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         label='v20251130'
     ),
     ExperimentSubmission(
+        model_name='ArchesWeather-V2',
         submission_dir='ArchesWeather/ArchesWeather-V2',
         experiment_name='aimip',
-        file_template=FILE_TEMPLATES['ArchesWeather-V2'],
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
     ),
     ExperimentSubmission(
+        model_name='ArchesWeatherGen-V2',
         submission_dir='ArchesWeather/ArchesWeatherGen-V2',
         experiment_name='aimip',
-        file_template=FILE_TEMPLATES['ArchesWeatherGen-V2'],
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
     ),
     ExperimentSubmission(
-        submission_dir='DLESyM/DLESyM',
-        experiment_name='aimip',
-        grid='gn',
-        file_template=FILE_TEMPLATES['DLESyM'],
-        label='v20250825',
-    ),
-    ExperimentSubmission(
-        submission_dir='Google/NeuralGCM',
-        experiment_name='aimip',
-        file_template=FILE_TEMPLATES['NeuralGCM'],
-        label='v20251203',
-        fix_zg=True,
-    ),
-    ExperimentSubmission(
-        submission_dir='Google/NeuralGCM-HRD',
-        experiment_name='aimip',
-        file_template=FILE_TEMPLATES['NeuralGCM-HRD'],
-        label='v20251203',
-        fix_zg=True,
-    ),
-    ExperimentSubmission(
+        model_name='cBottle1.3',
         submission_dir='NVIDIA/CMIP6/AIMIP/NVIDIA/cBottle-1-3',
         experiment_name='aimip',
-        file_template=FILE_TEMPLATES['cBottle'],
         label='v20260120',
         fix_zg=True,
     ),
     ExperimentSubmission(
+        model_name='DLESyM',
+        submission_dir='DLESyM/DLESyM',
+        experiment_name='aimip',
+        grid='gn',
+        label='v20250825',
+    ),
+    ExperimentSubmission(
+        model_name='MD1.5',
         submission_dir='UMD-PARETO/MD-1p5',
         experiment_name='aimip',
         grid='gr',
-        file_template=FILE_TEMPLATES['MD-1p5'],
         label='v20251217',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        model_name='NeuralGCM',
+        submission_dir='Google/NeuralGCM',
+        experiment_name='aimip',
+        label='v20251203',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        model_name='NeuralGCM-HRD',
+        submission_dir='Google/NeuralGCM-HRD',
+        experiment_name='aimip',
+        label='v20251203',
         fix_zg=True,
     ),
 ]
 
 ERA5_1DEG = ExperimentSubmission(
+    model_name='ERA5',
     submission_dir='ERA5',
-    file_template=FILE_TEMPLATES['ERA5_monthly_1deg'],
     experiment_name=None,
     label=None,
 )
 
 AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
     ExperimentSubmission(
+        model_name='ACE2.1-ERA5',
         submission_dir='Ai2/ACE2-1-ERA5',
         experiment_name='aimip-p2k',
-        file_template=FILE_TEMPLATES['ACE2-1-ERA5'],
         grid='gr',
         grid_mapping={
             'huss': 'gn',
@@ -263,57 +291,57 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         label='v20251130'
     ),
     ExperimentSubmission(
+        model_name='ArchesWeather-V2',
         submission_dir='ArchesWeather/ArchesWeather-V2',
         experiment_name='aimip-p2k',
-        file_template=FILE_TEMPLATES['ArchesWeather-V2-perturbed-sst'],
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
     ),
     ExperimentSubmission(
+        model_name='ArchesWeatherGen-V2',
         submission_dir='ArchesWeather/ArchesWeatherGen-V2',
         experiment_name='aimip-p2k',
-        file_template=FILE_TEMPLATES['ArchesWeatherGen-V2'],
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
     ),
     ExperimentSubmission(
+        model_name='DLESyM',
         submission_dir='DLESyM/DLESyM',
         experiment_name='aimip-p2k',
         grid='gn',
-        file_template=FILE_TEMPLATES['DLESyM'],
         label='v20250825',
     ),
     ExperimentSubmission(
-        submission_dir='Google/NeuralGCM',
-        experiment_name='aimip-p2k',
-        file_template=FILE_TEMPLATES['NeuralGCM'],
-        label='v20251209',
-        fix_zg=True,
-    ),
-    ExperimentSubmission(
-        submission_dir='Google/NeuralGCM-HRD',
-        experiment_name='aimip-p2k',
-        file_template=FILE_TEMPLATES['NeuralGCM-HRD'],
-        label='v20251209',
-        fix_zg=True,
-    ),
-    ExperimentSubmission(
+        model_name='MD1.5',
         submission_dir='UMD-PARETO/MD-1p5',
         experiment_name='aimip-2k',
         grid='gr',
-        file_template=FILE_TEMPLATES['MD-1p5'],
         label='v20251217',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        model_name='NeuralGCM',
+        submission_dir='Google/NeuralGCM',
+        experiment_name='aimip-p2k',
+        label='v20251209',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        model_name='NeuralGCM-HRD',
+        submission_dir='Google/NeuralGCM-HRD',
+        experiment_name='aimip-p2k',
+        label='v20251209',
         fix_zg=True,
     ),
 ]
 
 AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
     ExperimentSubmission(
+        model_name='ACE2.1-ERA5',
         submission_dir='Ai2/ACE2-1-ERA5',
         experiment_name='aimip-p4k',
-        file_template=FILE_TEMPLATES['ACE2-1-ERA5'],
         grid='gr',
         grid_mapping={
             'huss': 'gn',
@@ -327,48 +355,48 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
         label='v20251130'
     ),
     ExperimentSubmission(
+        model_name='ArchesWeather-V2',
         submission_dir='ArchesWeather/ArchesWeather-V2',
         experiment_name='aimip-p4k',
-        file_template=FILE_TEMPLATES['ArchesWeather-V2-perturbed-sst'],
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
     ),
     ExperimentSubmission(
+        model_name='ArchesWeatherGen-V2',
         submission_dir='ArchesWeather/ArchesWeatherGen-V2',
         experiment_name='aimip-p4k',
-        file_template=FILE_TEMPLATES['ArchesWeatherGen-V2'],
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
     ),
     ExperimentSubmission(
+        model_name='DLESyM',
         submission_dir='DLESyM/DLESyM',
         experiment_name='aimip-p4k',
         grid='gn',
-        file_template=FILE_TEMPLATES['DLESyM'],
         label='v20250825',
     ),
     ExperimentSubmission(
-        submission_dir='Google/NeuralGCM',
-        experiment_name='aimip-p4k',
-        file_template=FILE_TEMPLATES['NeuralGCM'],
-        label='v20251205',
-        fix_zg=True,
-    ),
-    ExperimentSubmission(
-        submission_dir='Google/NeuralGCM-HRD',
-        experiment_name='aimip-p4k',
-        file_template=FILE_TEMPLATES['NeuralGCM-HRD'],
-        label='v20251205',
-        fix_zg=True,
-    ),
-    ExperimentSubmission(
+        model_name='MD1.5',
         submission_dir='UMD-PARETO/MD-1p5',
         experiment_name='aimip-4k',
         grid='gr',
-        file_template=FILE_TEMPLATES['MD-1p5'],
         label='v20251217',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        model_name='NeuralGCM',
+        submission_dir='Google/NeuralGCM',
+        experiment_name='aimip-p4k',
+        label='v20251205',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
+        model_name='NeuralGCM-HRD',
+        submission_dir='Google/NeuralGCM-HRD',
+        experiment_name='aimip-p4k',
+        label='v20251205',
         fix_zg=True,
     ),
 ]
