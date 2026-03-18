@@ -2,9 +2,11 @@ import xarray as xr
 import numpy as np
 import xesmf
 import healpy as hp
+import fsspec
 import os
 from copy import deepcopy
 import dataclasses
+from matplotlib import pyplot as plt
 from typing import Literal
 
 DATA_ROOT = '../local_data'
@@ -30,6 +32,7 @@ NEURAL_GCM_HRD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{v
 CBOTTLE_FILE_TEMPLATE = 'r1i1p{i_r}f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_cBottle-1-3_{experiment_name}_r1i1p{i_r}f1_{grid}_197810-202412.nc'
 MD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_MD-1p5_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc'
 ERA5_FILE_TEMLATE = 'mon_1deg/native6_ERA5_an_v1_Amon_{varname}_1978-2024.nc'
+GFDL_AM4_AMIP_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-AM4/amip/r1i1p1f1/Amon/{varname}/gr1/{version_tag}'
 
 FILE_TEMPLATES = {
     'ACE2.1-ERA5-aimip': ACE_FILE_TEMPLATE,
@@ -58,6 +61,10 @@ FILE_TEMPLATES = {
     'MD1.5-aimip-4k': MD_FILE_TEMPLATE,
     'ERA5': ERA5_FILE_TEMLATE,
 }
+
+DEFAULT_GFDL_AM4_CMIP6_VERSION_TAG = 'v20180807'
+all_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+CATEGORICAL_COLORS = all_colors[:7] + all_colors[9:]
 
 @dataclasses.dataclass
 class EvaluationVariable:
@@ -673,3 +680,60 @@ def compute_error(pred: xr.Dataset, target: xr.Dataset) -> xr.Dataset:
     error = pred - target
     error = transfer_attrs(pred, error)
     return error
+
+def open_variable_from_cmip6_gcs_zarr(
+    path: str,
+    evaluation_variable: EvaluationVariable,
+) -> tuple[xr.Dataset, bool]:
+    try:
+        variable_dataset = xr.open_zarr(path)
+    except FileNotFoundError:
+        print(f"Not found: {path}")
+        missing = True
+        variable_dataset = xr.Dataset()
+    else:
+        print(path)
+        missing = False
+        variable_dataset = evaluation_variable.to_standard_pressure_levels(
+            variable_dataset, interpolate_to_pressure_levels=False
+        )
+    # singleton height coordinate for surface variables causes xarray merge conflicts
+    variable_dataset = variable_dataset.drop_vars("height", errors="ignore") 
+    return variable_dataset, missing
+
+def load_gfdl_am4_from_cmip6_gcs(
+    zarr_template: str,
+    eval_variables: list[EvaluationVariable],
+    other_variables: list[str],
+    version_tag_mapping: dict[str, str] | None=None,
+) -> tuple[xr.Dataset, list[str]]:
+    root_dir = zarr_template.format(
+        varname=eval_variables[0].short_name, version_tag=DEFAULT_GFDL_AM4_CMIP6_VERSION_TAG
+    ).split(eval_variables[0].short_name)[0]
+    fs, *_ = fsspec.get_fs_token_paths(root_dir)
+    all_variables = [os.path.basename(path) for path in fs.ls(root_dir)]
+    eval_variables_shortname = [eval_variable.short_name for eval_variable in eval_variables]
+    available_variables = list(set(all_variables).intersection(set(eval_variables_shortname)))
+    default_version_tag_mapping = {
+        k: DEFAULT_GFDL_AM4_CMIP6_VERSION_TAG for k in available_variables
+    }
+    if version_tag_mapping is not None:
+        version_tag_mapping = {**default_version_tag_mapping, **version_tag_mapping}
+    else:
+        version_tag_mapping = default_version_tag_mapping
+    ds_out = xr.Dataset()
+    missing_paths = []
+    for eval_variable in [
+        eval_variable for eval_variable in eval_variables if eval_variable.short_name in available_variables
+    ]:
+        varname = eval_variable.short_name
+        zarrpath = zarr_template.format(varname=varname, version_tag=version_tag_mapping[varname])
+        var_ds, missing = open_variable_from_cmip6_gcs_zarr(zarrpath, eval_variable)
+        if missing:
+            missing_paths.append(zarrpath)
+        ds_out[varname] = var_ds[varname]
+        for other_varname in other_variables:
+            if other_varname not in ds_out.data_vars and other_varname in var_ds:
+                ds_out[other_varname] = var_ds[other_varname]
+    ds_out = ds_out.assign_attrs(var_ds.attrs)
+    return ds_out, missing_paths
