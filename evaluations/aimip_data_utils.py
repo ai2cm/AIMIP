@@ -21,16 +21,21 @@ EVALUATION_PRESSURE_LEVELS = [
     10000.,
     5000.,
 ]
+DEFAULT_TIME_LABELS = {
+    'all_months': '197810-202412',
+    'daily_first_15_months': '19781001-19791231',
+    'daily_last_12_months': '20240101-20241231',
+}
 
-ACE_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_ACE2-ERA5_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc'
-ARCHES_WEATHER_AIMIP_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202501.nc'
-ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_aimip_r{i_r}i1p1f1_{grid}_197810-202501.nc'
-ARCHES_WEATHER_GEN_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeatherGen_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202501.nc'
-DLESYM_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_DLESyM_{experiment_name}_r{i_r}i1p1f1_{grid}_19831016-20241216.nc'
-NEURAL_GCM_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_NeuralGCM_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc'
-NEURAL_GCM_HRD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_NeuralGCM-HRD_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc'
-CBOTTLE_FILE_TEMPLATE = 'r1i1p{i_r}f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_cBottle-1-3_{experiment_name}_r1i1p{i_r}f1_{grid}_197810-202412.nc'
-MD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_MD-1p5_{experiment_name}_r{i_r}i1p1f1_{grid}_197810-202412.nc'
+ACE_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_ACE2-ERA5_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
+ARCHES_WEATHER_AIMIP_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
+ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_aimip_r{i_r}i1p1f1_{grid}_{time_period}.nc'
+ARCHES_WEATHER_GEN_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeatherGen_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
+DLESYM_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_DLESyM_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
+NEURAL_GCM_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_NeuralGCM_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
+NEURAL_GCM_HRD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_NeuralGCM-HRD_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
+CBOTTLE_FILE_TEMPLATE = 'r1i1p{i_r}f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_cBottle-1-3_{experiment_name}_r1i1p{i_r}f1_{grid}_{time_period}.nc'
+MD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_MD-1p5_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
 ERA5_FILE_TEMLATE = 'mon_1deg/native6_ERA5_an_v1_Amon_{varname}_1978-2024.nc'
 GFDL_AM4_AMIP_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-AM4/amip/r1i1p1f1/Amon/{varname}/gr1/{version_tag}'
 
@@ -127,6 +132,8 @@ class ExperimentSubmission:
     grid_mapping: dict[str, str] | None=None
     renames: dict[str, str] | None=None
     fix_zg: bool=False
+    submission_time_labels: dict[str, str] | None=None
+    custom_label_mapping: dict[str, str] | None=None
     data_root: str=DATA_ROOT
 
     def __post_init__(self):
@@ -138,6 +145,10 @@ class ExperimentSubmission:
             self.renames = {}
         if self.grid_mapping is None:
             self.grid_mapping = {}
+        if self.submission_time_labels is None:
+            self.submission_time_labels = DEFAULT_TIME_LABELS
+        if self.custom_label_mapping is None:
+            self.custom_label_mapping = {}
 
     @property
     def file_template(self) -> str:
@@ -164,23 +175,34 @@ class ExperimentSubmission:
         else:
             return self.grid
 
+    def get_label(self, table: str, varname: str) -> str:
+        if (
+            table in self.custom_label_mapping and varname in self.custom_label_mapping[table]
+        ):
+            return self.custom_label_mapping[table][varname]
+        else:
+            return self.label
+        
     def get_variable_path(
         self,
         variable: EvaluationVariable,
         i_r: int,
         table: str,
+        time_period: str,
     ) -> str:
         if variable.short_name in self.renames:
             variable_submission_name = self.renames[variable.short_name]
         else:
             variable_submission_name = variable.short_name
+        time_period = self.submission_time_labels[time_period].format(i_r=i_r)
         file_format = self.file_template.format(
             i_r=i_r,
             table=table,
             varname=variable_submission_name,
             grid=self.get_grid_for_variable(variable.short_name),
-            label=self.label,
+            label=self.get_label(table, variable.short_name),
             experiment_name=self.experiment_name,
+            time_period=time_period,
         )
         return os.path.join(
             self.data_root,
@@ -226,6 +248,11 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
+        submission_time_labels={
+            'all_months': '197810-202501',
+            'daily_first_15_months': '19781001-19791231',
+            'daily_last_12_months': '20240101-20241231',
+        },
     ),
     ExperimentSubmission(
         model_name='ArchesWeatherGen-V2',
@@ -234,6 +261,11 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
+        submission_time_labels={
+            'all_months': '197810-202501',
+            'daily_first_15_months': '19781001-19791231',
+            'daily_last_12_months': '20240101-20241231',
+        },
     ),
     ExperimentSubmission(
         model_name='cBottle1.3',
@@ -248,6 +280,10 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         experiment_name='aimip',
         grid='gn',
         label='v20250825',
+        submission_time_labels={
+            'all_months': '19831016-20241216',
+            'daily_first_15_months': '1983100{i_r}-19841231',
+        }
     ),
     ExperimentSubmission(
         model_name='MD1.5',
@@ -262,6 +298,21 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         submission_dir='Google/NeuralGCM',
         experiment_name='aimip',
         label='v20260304',
+        custom_label_mapping={
+            'day': {
+                'hus': 'v20260306',
+                'ps': 'v20260306',
+                'ta': 'v20260306',
+                'tas': 'v20260306',
+                'tdas': 'v20260306',
+                'ts': 'v20260306',
+                'ua': 'v20260306',
+                'uas': 'v20260306',
+                'va': 'v20260306',
+                'vas': 'v20260306',
+                'zg': 'v20260306',
+            },
+        },
         fix_zg=True,
     ),
     ExperimentSubmission(
@@ -269,6 +320,21 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         submission_dir='Google/NeuralGCM-HRD',
         experiment_name='aimip',
         label='v20260304',
+        custom_label_mapping={
+            'day': {
+                'hus': 'v20260306',
+                'ps': 'v20260305',
+                'ta': 'v20260306',
+                'tas': 'v20260305',
+                'tdas': 'v20260305',
+                'ts': 'v20260305',
+                'ua': 'v20260306',
+                'uas': 'v20260305',
+                'va': 'v20260306',
+                'vas': 'v20260305',
+                'zg': 'v20260306',
+            },
+        },
         fix_zg=True,
     ),
 ]
@@ -304,6 +370,11 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
+        submission_time_labels={
+            'all_months': '197810-202501',
+            'daily_first_15_months': '19781001-19791231',
+            'daily_last_12_months': '20240101-20241231',
+        },
     ),
     ExperimentSubmission(
         model_name='ArchesWeatherGen-V2',
@@ -312,6 +383,11 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
+        submission_time_labels={
+            'all_months': '197810-202501',
+            'daily_first_15_months': '19781001-19791231',
+            'daily_last_12_months': '20240101-20241231',
+        },
     ),
     ExperimentSubmission(
         model_name='DLESyM',
@@ -319,6 +395,10 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         experiment_name='aimip-p2k',
         grid='gn',
         label='v20250825',
+        submission_time_labels={
+            'all_months': '19831016-20241216',
+            'daily_first_15_months': '19831001-19841231',
+        }
     ),
     ExperimentSubmission(
         model_name='MD1.5',
@@ -368,6 +448,11 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
+        submission_time_labels={
+            'all_months': '197810-202501',
+            'daily_first_15_months': '19781001-19791231',
+            'daily_last_12_months': '20240101-20241231',
+        },
     ),
     ExperimentSubmission(
         model_name='ArchesWeatherGen-V2',
@@ -376,6 +461,11 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
         label=None,
         renames={'ts': 'tos'},
         fix_zg=True,
+        submission_time_labels={
+            'all_months': '197810-202501',
+            'daily_first_15_months': '19781001-19791231',
+            'daily_last_12_months': '20240101-20241231',
+        },
     ),
     ExperimentSubmission(
         model_name='DLESyM',
@@ -383,6 +473,10 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
         experiment_name='aimip-p4k',
         grid='gn',
         label='v20250825',
+        submission_time_labels={
+            'all_months': '19831016-20241216',
+            'daily_first_15_months': '19831001-19841231',
+        }
     ),
     ExperimentSubmission(
         model_name='MD1.5',
@@ -537,6 +631,7 @@ def open_aimip_data(
     experiment_submissions: list[ExperimentSubmission],
     evaluation_variables: list[EvaluationVariable],
     table: Literal['Amon', 'day'],
+    time_period: Literal['all_months', 'daily_first_15_months', 'daily_last_12_months']='all_months',
     n_realizations: int=N_REALIZATIONS,
 ) -> tuple[dict[str, xr.Dataset], dict[list[str]]]:
     experiment_submission_datasets = {}
@@ -550,7 +645,7 @@ def open_aimip_data(
             realization_datasets = []
             template = xr.Dataset()
             for i_r in range(1, n_realizations + 1):
-                variable_path = experiment_submission.get_variable_path(evaluation_variable, i_r, table)
+                variable_path = experiment_submission.get_variable_path(evaluation_variable, i_r, table, time_period)
                 realization_dataset, missing = open_variable_from_path(variable_path, evaluation_variable, experiment_submission, template)
                 realization_datasets.append(realization_dataset.expand_dims({'realization': [i_r]}))
                 if missing:
@@ -675,6 +770,12 @@ def compute_rms(field: xr.Dataset, lat_dim: str='lat', lon_dim: str='lon') -> xr
     rms = np.sqrt((field ** 2).weighted(weights).mean(dim=[lat_dim, lon_dim]))
     rms = transfer_attrs(field, rms)
     return rms
+
+def compute_weighted_mean(field: xr.Dataset, lat_dim: str='lat', lon_dim: str='lon') -> xr.Dataset:
+    weights = np.cos(np.deg2rad(field[lat_dim]))
+    mean = np.sqrt((field ** 2).weighted(weights).mean(dim=[lat_dim, lon_dim]))
+    mean = transfer_attrs(field, mean)
+    return mean
 
 def compute_error(pred: xr.Dataset, target: xr.Dataset) -> xr.Dataset:
     error = pred - target

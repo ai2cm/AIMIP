@@ -1,4 +1,3 @@
 ArchesWeather/ArchesWeather-V2: aimip-p4k/r3i1p1f1
 UMD-PARETO/MD-1p5: daily data
 NVIDIA/cBottle-1-3: aimip-p2k, aimip-p4k
-Google/NeuralGCM-HRD: aimip monthly tas for r2i1p1f1 and ua for r1i1p1f1
