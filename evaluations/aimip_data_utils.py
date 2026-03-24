@@ -773,7 +773,7 @@ def compute_rms(field: xr.Dataset, lat_dim: str='lat', lon_dim: str='lon') -> xr
 
 def compute_weighted_mean(field: xr.Dataset, lat_dim: str='lat', lon_dim: str='lon') -> xr.Dataset:
     weights = np.cos(np.deg2rad(field[lat_dim]))
-    mean = np.sqrt((field ** 2).weighted(weights).mean(dim=[lat_dim, lon_dim]))
+    mean = field.weighted(weights).mean(dim=[lat_dim, lon_dim]))
     mean = transfer_attrs(field, mean)
     return mean
 
