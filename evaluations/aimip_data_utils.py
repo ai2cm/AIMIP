@@ -271,7 +271,7 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         model_name='cBottle1.3',
         submission_dir='NVIDIA/CMIP6/AIMIP/NVIDIA/cBottle-1-3',
         experiment_name='aimip',
-        label='v20260120',
+        label='v20260323',
         fix_zg=True,
     ),
     ExperimentSubmission(
@@ -390,6 +390,13 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         },
     ),
     ExperimentSubmission(
+        model_name='cBottle1.3',
+        submission_dir='NVIDIA/CMIP6/AIMIP/NVIDIA/cBottle-1-3',
+        experiment_name='aimip-p2k',
+        label='v20260323',
+        fix_zg=True,
+    ),
+    ExperimentSubmission(
         model_name='DLESyM',
         submission_dir='DLESyM/DLESyM',
         experiment_name='aimip-p2k',
@@ -466,6 +473,13 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
             'daily_first_15_months': '19781001-19791231',
             'daily_last_12_months': '20240101-20241231',
         },
+    ),
+    ExperimentSubmission(
+        model_name='cBottle1.3',
+        submission_dir='NVIDIA/CMIP6/AIMIP/NVIDIA/cBottle-1-3',
+        experiment_name='aimip-p4k',
+        label='v20260323',
+        fix_zg=True,
     ),
     ExperimentSubmission(
         model_name='DLESyM',
@@ -773,7 +787,7 @@ def compute_rms(field: xr.Dataset, lat_dim: str='lat', lon_dim: str='lon') -> xr
 
 def compute_weighted_mean(field: xr.Dataset, lat_dim: str='lat', lon_dim: str='lon') -> xr.Dataset:
     weights = np.cos(np.deg2rad(field[lat_dim]))
-    mean = field.weighted(weights).mean(dim=[lat_dim, lon_dim]))
+    mean = field.weighted(weights).mean(dim=[lat_dim, lon_dim])
     mean = transfer_attrs(field, mean)
     return mean
 
