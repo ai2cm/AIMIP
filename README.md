@@ -31,7 +31,12 @@ V4: Dec. 2, 2025:
 V5: Dec. 5, 2025:
 
 * Provide guidance for the directory structure of AIMIP-1 submissions.
-    
+
+V6: Mar. 26, 2026:
+
+* Added SUBMISSIONS.md at the repo root listing all current AIMIP-1 model submissions, including experiment coverage, temporal frequency, grid information, version labels, and example DKRZ file paths.
+* Added evaluations/ directory containing Jupyter notebooks implementing the AIMIP-1 evaluation metrics (E1–E5) against ERA5 reanalysis.
+
 
 
 **Goals of AIMIP Phase 1 (AIMIP-1)**
@@ -253,6 +258,10 @@ Before the core AIMIP-1 paper is published, the authors of any paper, arxiv or c
 
 Submitted datasets should have a [Creative Commons CC-BY 4.0 license](https://creativecommons.org/share-your-work/cclicenses/) for unlimited public distribution (this allows others to copy, distribute, adapt, and build upon your work, even commercially, as long as they give you credit for the original creation. It is the most open and least restrictive of the Creative Commons licenses, requiring only that the original author is attributed.)
 
+**Current AIMIP-1 Submissions**
+
+A record of all current AIMIP-1 submissions — including participating groups, model names, experiment coverage, submitted grids, version labels, and example DKRZ file paths — is maintained in [SUBMISSIONS.md](SUBMISSIONS.md) at the root of this repository.
+
 **Evaluation metrics**
 
 At a minimum, examine (for standard models):
@@ -273,8 +282,12 @@ Evaluation will also be done with the CMIP Rapid Evaluation Framework (REF, [htt
 
 The ESMValTool Team (Righi et al. 2020; Eyring et al., 2020, https://github.com/ESMValGroup/ESMValTool) with its expertise in evaluating CMIP models for atmospheric variables (Bock et al., 2020\) and general evaluation diagnostics used in IPCC reports (e.g. Eyring et al., 2021\) will help in implementing both general diagnostics lacking in the first release of the REF, as well as in the development of AI-specific diagnostics. Contact persons for this will be Lisa Bock (DLR) and Bettina Gier (University of Bremen).
 
-The PMP Team (Lee et al. 2024, [https://github.com/PCMDI/pcmdi\_metrics](https://github.com/PCMDI/pcmdi_metrics)) has released [demos](https://pcmdi.github.io/pcmdi_metrics/demo-notebooks.html) in Jupyter Notebook format, which can be also useful for AI model evaluation. The contact person for this will be Jiwoo Lee (LLNL, lee1043@llnl.gov).  
-   
+The PMP Team (Lee et al. 2024, [https://github.com/PCMDI/pcmdi\_metrics](https://github.com/PCMDI/pcmdi_metrics)) has released [demos](https://pcmdi.github.io/pcmdi_metrics/demo-notebooks.html) in Jupyter Notebook format, which can be also useful for AI model evaluation. The contact person for this will be Jiwoo Lee (LLNL, lee1043@llnl.gov).
+
+**Evaluation Notebooks**
+
+Jupyter notebooks implementing the E1–E5 metrics against ERA5 reanalysis are available in the [evaluations/](evaluations/) directory of this repository. See [evaluations/README.md](evaluations/README.md) for setup and usage instructions.
+
 **Proposed timeline**
 
 16 Jul 2025:	AIMIP-1 protocol finalized and announced

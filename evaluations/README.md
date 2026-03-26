@@ -54,11 +54,16 @@ aws s3 sync s3://ai-mip/ERA5/ ./local_data/ERA5/ \
 local_data/
 ├── Ai2/
 ├── ArchesWeather/
+├── DLESyM/
 ├── Google/
 ├── NVIDIA/
 ├── UMD-PARETO/
 └── ERA5/
 ```
+
+### ERA5 evaluation data
+
+ERA5 monthly and daily data for use in AIMIP evaluations has also been made available on the DKRZ store by Nikolay Koldunov and Bettina Gier.
 
 ## Setup
 
