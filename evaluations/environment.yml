@@ -11,6 +11,8 @@ dependencies:
   - dask
   - fsspec
   - s3fs
+  - gcsfs
+  - zarr
   - xesmf
   - healpy
   - netcdf4
