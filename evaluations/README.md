@@ -12,6 +12,13 @@ By default, data is expected at `local_data/` one level above this directory (i.
 export AIMIP_DATA_ROOT=/path/to/your/data
 ```
 
+The output directories can also be overridden (they are created automatically on first run if absent):
+
+```bash
+export AIMIP_FIGURES_DIR=/path/to/figures   # default: ./figures
+export AIMIP_CACHE_DIR=/path/to/cached      # default: ./cached
+```
+
 ### Downloading data
 
 ```python
@@ -56,9 +63,16 @@ local_data/
 ## Setup
 
 ```bash
-conda env create -f environment.yml
-conda activate aimip-evaluations
-jupyter lab
+make env       # create the conda environment
+make test-env  # verify all dependencies are importable
+make lab       # launch JupyterLab interactively
+```
+
+To execute notebooks non-interactively:
+
+```bash
+make E1        # execute a single notebook in-place
+make execute   # execute all notebooks
 ```
 
 ## Notebooks
