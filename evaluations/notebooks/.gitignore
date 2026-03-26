@@ -1,0 +1,5 @@
+*.png
+.ipynb_checkpoints
+__pycache__/
+cached/
+*.tar.gz

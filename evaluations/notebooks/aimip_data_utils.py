@@ -9,7 +9,7 @@ import dataclasses
 from matplotlib import pyplot as plt
 from typing import Literal
 
-DATA_ROOT = os.environ.get('AIMIP_DATA_ROOT', '../local_data')
+DATA_ROOT = os.environ.get('AIMIP_DATA_ROOT', '../../local_data')
 N_REALIZATIONS = 5
 GRAVITY = 9.80665 # for geopotential height conversion, standard value
 EVALUATION_PRESSURE_LEVELS = [

@@ -6,7 +6,7 @@ Jupyter notebooks for evaluating AIMIP model submissions against ERA5 reanalysis
 
 Notebooks require local copies of AIMIP model submissions and ERA5 reference data downloaded from DKRZ S3 (`s3://ai-mip/` at `https://s3.eu-dkrz-1.dkrz.cloud`).
 
-By default, data is expected at `local_data/` one level above this directory (i.e., at the repo root). To use a different path, set the `AIMIP_DATA_ROOT` environment variable before launching Jupyter:
+By default, data is expected at `local_data/` at the repo root. To use a different path, set the `AIMIP_DATA_ROOT` environment variable before launching Jupyter:
 
 ```bash
 export AIMIP_DATA_ROOT=/path/to/your/data
@@ -87,5 +87,5 @@ make execute   # execute all notebooks
 
 ## Utility Modules
 
-- `aimip_data_utils.py` — data loading, regridding, and processing functions shared across notebooks
-- `enso_index.py` — Niño3.4 ENSO index data and xarray conversion utilities
+- `notebooks/aimip_data_utils.py` — data loading, regridding, and processing functions shared across notebooks
+- `notebooks/enso_index.py` — Niño3.4 ENSO index data and xarray conversion utilities
