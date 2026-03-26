@@ -1,6 +1,57 @@
 # AIMIP Evaluation Notebooks
 
-Jupyter notebooks for evaluating AIMIP model submissions against ERA5 reanalysis data. Notebooks load model output directly from the DKRZ S3 cloud storage — an active internet connection is required.
+Jupyter notebooks for evaluating AIMIP model submissions against ERA5 reanalysis data. Notebooks read from local data files that must be downloaded in advance (see **Data** below).
+
+## Data
+
+Notebooks require local copies of AIMIP model submissions and ERA5 reference data downloaded from DKRZ S3 (`s3://ai-mip/` at `https://s3.eu-dkrz-1.dkrz.cloud`).
+
+By default, data is expected at `local_data/` one level above this directory (i.e., at the repo root). To use a different path, set the `AIMIP_DATA_ROOT` environment variable before launching Jupyter:
+
+```bash
+export AIMIP_DATA_ROOT=/path/to/your/data
+```
+
+### Downloading data
+
+```python
+import s3fs
+
+fs = s3fs.S3FileSystem(
+    client_kwargs={'endpoint_url': 'https://s3.eu-dkrz-1.dkrz.cloud'},
+    anon=True,
+)
+
+# Download a full model submission (replace <OrgName> and <ModelName> as needed)
+fs.get('ai-mip/<OrgName>/<ModelName>/', './local_data/<OrgName>/<ModelName>/', recursive=True)
+
+# Download ERA5 reference data
+fs.get('ai-mip/ERA5/', './local_data/ERA5/', recursive=True)
+```
+
+Alternatively, using the AWS CLI:
+
+```bash
+# Download a full model submission (replace <OrgName> and <ModelName> as needed)
+aws s3 sync s3://ai-mip/<OrgName>/<ModelName>/ ./local_data/<OrgName>/<ModelName>/ \
+    --endpoint-url https://s3.eu-dkrz-1.dkrz.cloud --no-sign-request
+
+# Download ERA5 reference data
+aws s3 sync s3://ai-mip/ERA5/ ./local_data/ERA5/ \
+    --endpoint-url https://s3.eu-dkrz-1.dkrz.cloud --no-sign-request
+```
+
+### Expected directory structure
+
+```
+local_data/
+├── Ai2/
+├── ArchesWeather/
+├── Google/
+├── NVIDIA/
+├── UMD-PARETO/
+└── ERA5/
+```
 
 ## Setup
 
