@@ -36,6 +36,7 @@ V6: Mar. 26, 2026:
 
 * Added SUBMISSIONS.md at the repo root listing all current AIMIP-1 model submissions, including experiment coverage, temporal frequency, grid information, version labels, and example DKRZ file paths.
 * Added evaluations/ directory containing Jupyter notebooks implementing the AIMIP-1 evaluation metrics (E1–E5) against ERA5 reanalysis.
+* The AIMIP Phase 1 evaluation results have now been made available [here](https://docs.google.com/presentation/d/1ojsyBmINZIBug5Ie1p2ZRn432NgnbszcI_1MNihbwts/edit?slide=id.g3a59e16ecd3_0_0#slide=id.g3a59e16ecd3_0_0).
 
 
 
