@@ -1,0 +1,19 @@
+name: aimip-evaluations
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - xarray
+  - numpy
+  - matplotlib
+  - cartopy
+  - dask
+  - fsspec
+  - s3fs
+  - gcsfs
+  - zarr
+  - xesmf
+  - healpy
+  - netcdf4
+  - jupyterlab
