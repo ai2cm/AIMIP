@@ -6,6 +6,8 @@ When iterating on figures, run any cell that is solely involved in generating fi
 
 Typical pattern: edit the figure function cell → run it → run the call cell → inspect the output → repeat.
 
+**Do not commit figure changes until the figure has been run and the output confirmed.** Layout issues only appear at render time — committing before review locks in problems that require an amend.
+
 ## Manuscript Figure Conventions
 
 Rules established while building E1 manuscript figures. Apply to all notebooks (E2–E5).
