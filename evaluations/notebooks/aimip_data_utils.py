@@ -134,6 +134,7 @@ class ExperimentSubmission:
     fix_zg: bool=False
     submission_time_labels: dict[str, str] | None=None
     custom_label_mapping: dict[str, str] | None=None
+    realization_day_offset: int=0
     data_root: str=DATA_ROOT
 
     def __post_init__(self):
@@ -194,7 +195,12 @@ class ExperimentSubmission:
             variable_submission_name = self.renames[variable.short_name]
         else:
             variable_submission_name = variable.short_name
-        time_period = self.submission_time_labels[time_period].format(i_r=i_r)
+        i_r_day = i_r + self.realization_day_offset
+        template = self.submission_time_labels[time_period]
+        if isinstance(template, list):
+            time_period = template[i_r - 1]
+        else:
+            time_period = template.format(i_r=i_r, i_r_day=i_r_day)
         file_format = self.file_template.format(
             i_r=i_r,
             table=table,
@@ -279,10 +285,17 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         submission_dir='DLESyM/DLESyM',
         experiment_name='aimip',
         grid='gn',
-        label='v20250825',
+        label='v20260406',
+        realization_day_offset=2,
         submission_time_labels={
-            'all_months': '19831016-20241216',
-            'daily_first_15_months': '1983100{i_r}-19841231',
+            'all_months': [
+                '19781016-20241216',  # r1
+                '19781016-20241216',  # r2
+                '19781016-20241216',  # r3
+                '19781016-20241216',  # r4
+                '19781016-20250116',  # r5
+            ],
+            'daily_first_15_months': '1978100{i_r_day}-19841231',
         }
     ),
     ExperimentSubmission(
@@ -401,10 +414,17 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         submission_dir='DLESyM/DLESyM',
         experiment_name='aimip-p2k',
         grid='gn',
-        label='v20250825',
+        label='v20260406',
+        realization_day_offset=2,
         submission_time_labels={
-            'all_months': '19831016-20241216',
-            'daily_first_15_months': '19831001-19841231',
+            'all_months': [
+                '19781016-20241216',  # r1
+                '19781016-20241216',  # r2
+                '19781016-20241216',  # r3
+                '19781016-20241216',  # r4
+                '19781016-20250116',  # r5
+            ],
+            'daily_first_15_months': '1978100{i_r_day}-19841231',
         }
     ),
     ExperimentSubmission(
@@ -486,10 +506,17 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
         submission_dir='DLESyM/DLESyM',
         experiment_name='aimip-p4k',
         grid='gn',
-        label='v20250825',
+        label='v20260406',
+        realization_day_offset=2,
         submission_time_labels={
-            'all_months': '19831016-20241216',
-            'daily_first_15_months': '19831001-19841231',
+            'all_months': [
+                '19781016-20241216',  # r1
+                '19781016-20241216',  # r2
+                '19781016-20241216',  # r3
+                '19781016-20241216',  # r4
+                '19781016-20250116',  # r5
+            ],
+            'daily_first_15_months': '1978100{i_r_day}-19841231',
         }
     ),
     ExperimentSubmission(
