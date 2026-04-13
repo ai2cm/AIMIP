@@ -36,6 +36,7 @@ Rules established while building E1 manuscript figures. Apply to all notebooks (
 - Do not show coastlines (`ax.coastlines()`) in manuscript map figures.
 - For **vertical** colorbars (the default for multi-row map figures like E1): use `fraction=0.015`, `pad=0.06`, `aspect=25`.
 - For **horizontal** colorbars (used when a single-row ERA5 reference colorbar would cause rotated label overflow — e.g. E2 trend bias maps): use `fraction=0.04`, `pad=0.06`, `aspect=30`. The `pad=0.06` rule applies in both cases. Do not try to switch a figure's colorbar orientation to achieve CLAUDE.md compliance — only fix individual parameter values.
+- When a figure shows both a reference field (ERA5) and model error/bias for the same variable, share the colorbar limits between them: `shared = max(vlims_ref[var], vlims_error[var])` applied per variable. Do **not** share limits across different variables.
 - Row labels: place the variable name once per variable, centered between the train/test row pair (anchor at `y=0` of the first row, `x=-0.10`). Place smaller grey `(train)`/`(test)` labels separately in each row at `x=-0.03`.
 
 ### Panel lettering
