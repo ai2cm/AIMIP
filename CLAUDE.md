@@ -6,6 +6,10 @@ When iterating on figures, run any cell that is solely involved in generating fi
 
 Typical pattern: edit the figure function cell → run it → run the call cell → inspect the output → repeat.
 
+**Editing notebook cells:** The evaluation notebooks are too large for the Read tool (exceeds token limit). Never attempt to use Read or NotebookEdit on these files. Instead, use a Bash Python snippet: `json.load` the notebook, find the cell by `id`, mutate `cell['source']`, and `json.dump` it back. Use Grep to search cell content directly in the `.ipynb` file.
+
+**Prefer targeted cell edits over full rewrites.** When only a few lines change, replace just those lines (string `.replace()` on the joined source). Full cell rewrites risk introducing escaping bugs — in particular, writing cell source as a Python triple-quoted string in a heredoc causes `\"\"\"` to appear in docstrings instead of `"""`. If a full rewrite is truly necessary, write the new source to a temp `.py` file with the `Write` tool, then `open(tmpfile).read()` it into the notebook dict — this avoids any Python string escaping layer.
+
 **Do not commit figure changes until the figure has been run and the output confirmed.** Layout issues only appear at render time — committing before review locks in problems that require an amend.
 
 ## Manuscript Figure Conventions
@@ -36,8 +40,8 @@ Rules established while building E1 manuscript figures. Apply to all notebooks (
 - Do not show coastlines (`ax.coastlines()`) in manuscript map figures.
 - For **vertical** colorbars (the default for multi-row map figures like E1): use `fraction=0.015`, `pad=0.06`, `aspect=25`.
 - For **horizontal** colorbars (used when a single-row ERA5 reference colorbar would cause rotated label overflow — e.g. E2 trend bias maps): use `fraction=0.04`, `pad=0.06`, `aspect=30`. The `pad=0.06` rule applies in both cases. Do not try to switch a figure's colorbar orientation to achieve CLAUDE.md compliance — only fix individual parameter values.
-- When a figure shows both a reference field (ERA5) and model error/bias for the same variable, share the colorbar limits between them: `shared = max(vlims_ref[var], vlims_error[var])` applied per variable. Do **not** share limits across different variables.
-- Row labels: place the variable name once per variable, centered between the train/test row pair (anchor at `y=0` of the first row, `x=-0.10`). Place smaller grey `(train)`/`(test)` labels separately in each row at `x=-0.03`.
+- When a figure shows both a reference field (ERA5) and model error/bias for the same variable, share the colorbar limits **only if the ERA5 values and model errors are similar in magnitude** (e.g. E2 trend bias, E3 ENSO coefficients). Do not share when ERA5 absolute values dominate (e.g. E1, E4) — that would wash out the error signal. When sharing: `shared = max(vlims_ref[var], vlims_error[var])` per variable; do **not** share across different variables.
+- Row labels for **train/test figures** (E1): place the variable name once per variable, centered between the train/test row pair (`y=0.5` of the first row, `x=-0.10`). Place smaller grey `(train)`/`(test)` labels separately in each row at `x=-0.03`. For **model-row figures** (E4, E5): one label per model row at `x=-0.10` to `-0.13` depending on column count — more columns means narrower axes, so the offset must be larger to avoid the label clipping the map edge.
 
 ### Panel lettering
 - Add panel letters `(a)`, `(b)`, … in row-major order, placed top-left inside each axes (`va='top'`, `ha='left'`, `x=0.03`, `y=0.97`), bold, at `LABEL_FS`.
