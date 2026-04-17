@@ -874,9 +874,11 @@ def load_gfdl_am4_from_cmip6_gcs(
         var_ds, missing = open_variable_from_cmip6_gcs_zarr(zarrpath, eval_variable)
         if missing:
             missing_paths.append(zarrpath)
+            continue
         ds_out[varname] = var_ds[varname]
         for other_varname in other_variables:
             if other_varname not in ds_out.data_vars and other_varname in var_ds:
                 ds_out[other_varname] = var_ds[other_varname]
-    ds_out = ds_out.assign_attrs(var_ds.attrs)
+    if var_ds.attrs:
+        ds_out = ds_out.assign_attrs(var_ds.attrs)
     return ds_out, missing_paths
