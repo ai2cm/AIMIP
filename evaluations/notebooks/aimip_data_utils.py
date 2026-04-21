@@ -37,7 +37,8 @@ NEURAL_GCM_HRD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{v
 CBOTTLE_FILE_TEMPLATE = 'r1i1p{i_r}f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_cBottle-1-3_{experiment_name}_r1i1p{i_r}f1_{grid}_{time_period}.nc'
 MD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_MD-1p5_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
 ERA5_FILE_TEMLATE = 'mon_1deg/native6_ERA5_an_v1_Amon_{varname}_1978-2024.nc'
-GFDL_AM4_AMIP_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-AM4/amip/r1i1p1f1/Amon/{varname}/gr1/{version_tag}'
+GFDL_CM4_AMIP_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-CM4/amip/r1i1p1f1/Amon/{varname}/gr1/v20180701'
+GFDL_CM4_AMIP_DAILY_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-CM4/amip/r1i1p1f1/day/{varname}/gr1/v20180701'
 
 FILE_TEMPLATES = {
     'ACE2.1-ERA5-aimip': ACE_FILE_TEMPLATE,
@@ -873,9 +874,11 @@ def load_gfdl_am4_from_cmip6_gcs(
         var_ds, missing = open_variable_from_cmip6_gcs_zarr(zarrpath, eval_variable)
         if missing:
             missing_paths.append(zarrpath)
+            continue
         ds_out[varname] = var_ds[varname]
         for other_varname in other_variables:
             if other_varname not in ds_out.data_vars and other_varname in var_ds:
                 ds_out[other_varname] = var_ds[other_varname]
-    ds_out = ds_out.assign_attrs(var_ds.attrs)
+    if var_ds.attrs:
+        ds_out = ds_out.assign_attrs(var_ds.attrs)
     return ds_out, missing_paths
