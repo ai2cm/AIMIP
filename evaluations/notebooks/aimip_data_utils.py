@@ -69,8 +69,16 @@ FILE_TEMPLATES = {
 }
 
 DEFAULT_GFDL_AM4_CMIP6_VERSION_TAG = 'v20180807'
-all_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-CATEGORICAL_COLORS = all_colors[:7] + all_colors[9:]
+CATEGORICAL_COLORS = [
+    "#E69F00",  # orange         (Okabe-Ito)
+    "#56B4E9",  # sky blue       (Okabe-Ito)
+    "#009E73",  # bluish green   (Okabe-Ito)
+    "#0072B2",  # blue           (Okabe-Ito)
+    "#D55E00",  # vermillion     (Okabe-Ito)
+    "#CC79A7",  # reddish purple (Okabe-Ito)
+    "#882255",  # wine           (Tol muted)
+    "#999933",  # olive          (Tol muted)
+]
 
 @dataclasses.dataclass
 class EvaluationVariable:
