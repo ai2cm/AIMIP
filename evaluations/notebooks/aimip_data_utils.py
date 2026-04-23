@@ -62,15 +62,23 @@ FILE_TEMPLATES = {
     'cBottle1.3-aimip': CBOTTLE_FILE_TEMPLATE,
     'cBottle1.3-aimip-p2k': CBOTTLE_FILE_TEMPLATE,
     'cBottle1.3-aimip-p4k': CBOTTLE_FILE_TEMPLATE,
-    'MD1.5-aimip': MD_FILE_TEMPLATE,
-    'MD1.5-aimip-2k': MD_FILE_TEMPLATE,
-    'MD1.5-aimip-4k': MD_FILE_TEMPLATE,
+    'MD-1.5-aimip': MD_FILE_TEMPLATE,
+    'MD-1.5-aimip-2k': MD_FILE_TEMPLATE,
+    'MD-1.5-aimip-4k': MD_FILE_TEMPLATE,
     'ERA5': ERA5_FILE_TEMLATE,
 }
 
 DEFAULT_GFDL_AM4_CMIP6_VERSION_TAG = 'v20180807'
-all_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-CATEGORICAL_COLORS = all_colors[:7] + all_colors[9:]
+CATEGORICAL_COLORS = [
+    "#E69F00",  # orange         (Okabe-Ito)
+    "#56B4E9",  # sky blue       (Okabe-Ito)
+    "#009E73",  # bluish green   (Okabe-Ito)
+    "#0072B2",  # blue           (Okabe-Ito)
+    "#D55E00",  # vermillion     (Okabe-Ito)
+    "#CC79A7",  # reddish purple (Okabe-Ito)
+    "#882255",  # wine           (Tol muted)
+    "#999933",  # olive          (Tol muted)
+]
 
 @dataclasses.dataclass
 class EvaluationVariable:
@@ -300,7 +308,7 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         }
     ),
     ExperimentSubmission(
-        model_name='MD1.5',
+        model_name='MD-1.5',
         submission_dir='UMD-PARETO/MD-1p5',
         experiment_name='aimip',
         grid='gr',
@@ -429,7 +437,7 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         }
     ),
     ExperimentSubmission(
-        model_name='MD1.5',
+        model_name='MD-1.5',
         submission_dir='UMD-PARETO/MD-1p5',
         experiment_name='aimip-2k',
         grid='gr',
@@ -521,7 +529,7 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
         }
     ),
     ExperimentSubmission(
-        model_name='MD1.5',
+        model_name='MD-1.5',
         submission_dir='UMD-PARETO/MD-1p5',
         experiment_name='aimip-4k',
         grid='gr',
