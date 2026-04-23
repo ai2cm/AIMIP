@@ -62,9 +62,9 @@ FILE_TEMPLATES = {
     'cBottle1.3-aimip': CBOTTLE_FILE_TEMPLATE,
     'cBottle1.3-aimip-p2k': CBOTTLE_FILE_TEMPLATE,
     'cBottle1.3-aimip-p4k': CBOTTLE_FILE_TEMPLATE,
-    'MD1.5-aimip': MD_FILE_TEMPLATE,
-    'MD1.5-aimip-2k': MD_FILE_TEMPLATE,
-    'MD1.5-aimip-4k': MD_FILE_TEMPLATE,
+    'MD-1.5-aimip': MD_FILE_TEMPLATE,
+    'MD-1.5-aimip-2k': MD_FILE_TEMPLATE,
+    'MD-1.5-aimip-4k': MD_FILE_TEMPLATE,
     'ERA5': ERA5_FILE_TEMLATE,
 }
 
@@ -308,7 +308,7 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         }
     ),
     ExperimentSubmission(
-        model_name='MD1.5',
+        model_name='MD-1.5',
         submission_dir='UMD-PARETO/MD-1p5',
         experiment_name='aimip',
         grid='gr',
@@ -437,7 +437,7 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         }
     ),
     ExperimentSubmission(
-        model_name='MD1.5',
+        model_name='MD-1.5',
         submission_dir='UMD-PARETO/MD-1p5',
         experiment_name='aimip-2k',
         grid='gr',
@@ -529,7 +529,7 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
         }
     ),
     ExperimentSubmission(
-        model_name='MD1.5',
+        model_name='MD-1.5',
         submission_dir='UMD-PARETO/MD-1p5',
         experiment_name='aimip-4k',
         grid='gr',
