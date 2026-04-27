@@ -44,12 +44,12 @@ FILE_TEMPLATES = {
     'ACE2.1-ERA5-aimip': ACE_FILE_TEMPLATE,
     'ACE2.1-ERA5-aimip-p2k': ACE_FILE_TEMPLATE,
     'ACE2.1-ERA5-aimip-p4k': ACE_FILE_TEMPLATE,
-    'ArchesWeather-V2-aimip': ARCHES_WEATHER_AIMIP_FILE_TEMPLATE,
-    'ArchesWeather-V2-aimip-p2k': ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE,
-    'ArchesWeather-V2-aimip-p4k': ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE,
-    'ArchesWeatherGen-V2-aimip': ARCHES_WEATHER_GEN_FILE_TEMPLATE,
-    'ArchesWeatherGen-V2-aimip-p2k': ARCHES_WEATHER_GEN_FILE_TEMPLATE,
-    'ArchesWeatherGen-V2-aimip-p4k': ARCHES_WEATHER_GEN_FILE_TEMPLATE,
+    'ArchesWeather-aimip': ARCHES_WEATHER_AIMIP_FILE_TEMPLATE,
+    'ArchesWeather-aimip-p2k': ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE,
+    'ArchesWeather-aimip-p4k': ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE,
+    'ArchesWeatherGen-aimip': ARCHES_WEATHER_GEN_FILE_TEMPLATE,
+    'ArchesWeatherGen-aimip-p2k': ARCHES_WEATHER_GEN_FILE_TEMPLATE,
+    'ArchesWeatherGen-aimip-p4k': ARCHES_WEATHER_GEN_FILE_TEMPLATE,
     'DLESyM-aimip': DLESYM_FILE_TEMPLATE,
     'DLESyM-aimip-p2k': DLESYM_FILE_TEMPLATE,
     'DLESyM-aimip-p4k': DLESYM_FILE_TEMPLATE,
@@ -257,7 +257,7 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         label='v20251130'
     ),
     ExperimentSubmission(
-        model_name='ArchesWeather-V2',
+        model_name='ArchesWeather',
         submission_dir='ArchesWeather/ArchesWeather-V2',
         experiment_name='aimip',
         label=None,
@@ -270,7 +270,7 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         },
     ),
     ExperimentSubmission(
-        model_name='ArchesWeatherGen-V2',
+        model_name='ArchesWeatherGen',
         submission_dir='ArchesWeather/ArchesWeatherGen-V2',
         experiment_name='aimip',
         label=None,
@@ -386,7 +386,7 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         label='v20251130'
     ),
     ExperimentSubmission(
-        model_name='ArchesWeather-V2',
+        model_name='ArchesWeather',
         submission_dir='ArchesWeather/ArchesWeather-V2',
         experiment_name='aimip-p2k',
         label=None,
@@ -399,7 +399,7 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         },
     ),
     ExperimentSubmission(
-        model_name='ArchesWeatherGen-V2',
+        model_name='ArchesWeatherGen',
         submission_dir='ArchesWeather/ArchesWeatherGen-V2',
         experiment_name='aimip-p2k',
         label=None,
@@ -478,7 +478,7 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
         label='v20251130'
     ),
     ExperimentSubmission(
-        model_name='ArchesWeather-V2',
+        model_name='ArchesWeather',
         submission_dir='ArchesWeather/ArchesWeather-V2',
         experiment_name='aimip-p4k',
         label=None,
@@ -491,7 +491,7 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
         },
     ),
     ExperimentSubmission(
-        model_name='ArchesWeatherGen-V2',
+        model_name='ArchesWeatherGen',
         submission_dir='ArchesWeather/ArchesWeatherGen-V2',
         experiment_name='aimip-p4k',
         label=None,
