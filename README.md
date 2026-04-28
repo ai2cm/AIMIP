@@ -263,6 +263,8 @@ Submitted datasets should have a [Creative Commons CC-BY 4.0 license](https://cr
 
 A record of all current AIMIP-1 submissions — including participating groups, model names, experiment coverage, submitted grids, version labels, and example DKRZ file paths — is maintained in [SUBMISSIONS.md](SUBMISSIONS.md) at the root of this repository.
 
+For the different ways to access this data programmatically (local download, direct S3 reads, or the published intake catalog with kerchunk/icechunk leaves), see [evaluations/README.md § Data access approaches](evaluations/README.md#data-access-approaches).
+
 **Evaluation metrics**
 
 At a minimum, examine (for standard models):
