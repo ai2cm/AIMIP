@@ -6,6 +6,8 @@ When iterating on figures, run any cell that is solely involved in generating fi
 
 Typical pattern: edit the figure function cell → run it → run the call cell → inspect the output → repeat.
 
+**Running cells:** Use the Jupyter REST API against the already-running server (`jupyter server list` to get the URL/token). Find the kernel ID for the target notebook via `GET /api/sessions`, then execute code via the kernel websocket. Do not ask the user to run cells — iterate autonomously and only ask the user to confirm the final output before committing.
+
 **Editing notebook cells:** The evaluation notebooks are too large for the Read tool (exceeds token limit). Never attempt to use Read or NotebookEdit on these files. Instead, use a Bash Python snippet: `json.load` the notebook, find the cell by `id`, mutate `cell['source']`, and `json.dump` it back. Use Grep to search cell content directly in the `.ipynb` file.
 
 **Prefer targeted cell edits over full rewrites.** When only a few lines change, replace just those lines (string `.replace()` on the joined source). Full cell rewrites risk introducing escaping bugs — in particular, writing cell source as a Python triple-quoted string in a heredoc causes `\"\"\"` to appear in docstrings instead of `"""`. If a full rewrite is truly necessary, write the new source to a temp `.py` file with the `Write` tool, then `open(tmpfile).read()` it into the notebook dict — this avoids any Python string escaping layer.
