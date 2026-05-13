@@ -2,14 +2,15 @@
 
 Chris Bretherton ([christopherb@allenai.org](mailto:christopherb@allenai.org)), Allen Institute for Artificial Intelligence (Ai2)
 
-The latest dated version is publicly posted on the [AIMIP-1 Github site](https://github.com/ai2cm/AIMIP)  
-Interested in participating?  Email me to join our AIMIP Google Group.  
+Interested in participating?  Email me or Brian Henn ([brianhenn@allenai.org](mailto:brianhenn@allenai.org)) to join our AIMIP Google Group ([ai-mip@googlegroups.com](mailto:ai-mip@googlegroups.com)).
    
-Based on the 12/2024 [AIMIP proposal](https://docs.google.com/document/d/1oPP_ia4F-vBZJbPJ820JbyAl6B4kHtQT59Sixj9nEEs/edit?usp=sharing) gdoc and valuable feedback from many comments on earlier versions of this doc from around the world (esp. Nikolai Koldunov) and colleagues in Ai2 Climate Modeling (esp. Brian Henn).  Dated versions
+Based on the 12/2024 [AIMIP proposal](https://docs.google.com/document/d/1oPP_ia4F-vBZJbPJ820JbyAl6B4kHtQT59Sixj9nEEs/edit?usp=sharing) gdoc and valuable feedback from many comments on earlier versions of this doc from around the world (esp. Nikolai Koldunov) and colleagues in Ai2 Climate Modeling (esp. Brian Henn). 
 
-This document should get participants started, but will reflect ongoing improvements  
+**Dated versions**
+
 V1: July 16, 2025  
-V2: Aug.13, 2025: 
+
+V2: Aug. 13, 2025: 
 
 * Link added to 0.25° Ai2-generated ERA5-based monthly SST/sea ice data set for forcing inference simulations created by Ai2  
 * Clarify that submission of daily data from inference simulations is optional.
@@ -38,7 +39,10 @@ V6: Mar. 26, 2026:
 * Added evaluations/ directory containing Jupyter notebooks implementing the AIMIP-1 evaluation metrics (E1–E5) against ERA5 reanalysis.
 * The AIMIP Phase 1 evaluation results have now been made available [here](https://docs.google.com/presentation/d/1ojsyBmINZIBug5Ie1p2ZRn432NgnbszcI_1MNihbwts/edit?slide=id.g3a59e16ecd3_0_0#slide=id.g3a59e16ecd3_0_0).
 
+V7: May 13, 2026: 
 
+* The AIMIP Phase 1 manuscript is now [available on arXix](https://arxiv.org/abs/2605.06944).
+* Information on how to access the Phase 1 dataset is available [here](evaluations/README.md#data).
 
 **Goals of AIMIP Phase 1 (AIMIP-1)**
 
@@ -287,9 +291,11 @@ The ESMValTool Team (Righi et al. 2020; Eyring et al., 2020, https://github.com/
 
 The PMP Team (Lee et al. 2024, [https://github.com/PCMDI/pcmdi\_metrics](https://github.com/PCMDI/pcmdi_metrics)) has released [demos](https://pcmdi.github.io/pcmdi_metrics/demo-notebooks.html) in Jupyter Notebook format, which can be also useful for AI model evaluation. The contact person for this will be Jiwoo Lee (LLNL, lee1043@llnl.gov).
 
-**Evaluation Notebooks**
+**Evaluation Notebooks and Dataset Access**
 
 Jupyter notebooks implementing the E1–E5 metrics against ERA5 reanalysis are available in the [evaluations/](evaluations/) directory of this repository. See [evaluations/README.md](evaluations/README.md) for setup and usage instructions.
+
+See [Data](evaluations/README.md#data) for more information on how to acess the AIMIP Phase 1 dataset.
 
 **Proposed timeline**
 
