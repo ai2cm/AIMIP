@@ -1,4 +1,5 @@
 import xarray as xr
+import numpy as np
 import datetime
 
 # Nino3.4 index anomaly from tropical SST average, 3-monthly centered running mean [K]
@@ -203,8 +204,14 @@ def index_data_array(
         ENSO index data as an xarray DataArray.
     """
     timestamps, index_values = zip(*index_data)
+    # Force datetime64[ns] so the index aligns with the model/ERA5 time coordinate.
+    # (Newer numpy converts datetime.datetime to datetime64[us]; interpolating a [us]
+    # index onto [ns] data times mismatches resolutions and yields all-NaN coefficients.)
     time_coord = xr.DataArray(
-        [datetime.datetime(*timestamp) for timestamp in timestamps],
+        np.array(
+            [datetime.datetime(*timestamp) for timestamp in timestamps],
+            dtype="datetime64[ns]",
+        ),
         dims=["time"],
     )
     return xr.DataArray(list(index_values), coords={"time": time_coord}, dims=["time"])

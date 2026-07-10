@@ -2,5 +2,35 @@
 *.eps
 .ipynb_checkpoints
 __pycache__/
-cached/
 *.tar.gz
+
+# The working/regeneration cache is ignored, EXCEPT the minimal reduced products
+# that back the reproducibility archive (committed so a release/Zenodo carries them;
+# see ../REPRODUCIBILITY.md). Must be `cached/*` (not `cached/`) for the negations to apply.
+cached/*
+!cached/biases_map_1deg.nc
+!cached/biases_map_2p8deg.nc
+!cached/rmsb_1deg.nc
+!cached/rmsb_2p8deg.nc
+!cached/regridded_global_annual_means.nc
+!cached/global_annual_mean_era5.nc
+!cached/regridded_global_annual_means_2p8deg.nc
+!cached/regridded_global_annual_mean_era5_2p8deg.nc
+!cached/regridded_trend_1deg.nc
+!cached/regridded_trend_era5_1deg.nc
+!cached/regridded_trend_2p8deg.nc
+!cached/regridded_trend_era5_2p8deg.nc
+!cached/enso_coeff_error_map_1deg.nc
+!cached/enso_coeff_era5_map_1deg.nc
+!cached/enso_coeff_error_map_2p8deg.nc
+!cached/enso_coeff_era5_map_2p8deg.nc
+!cached/enso_coeff_rmse_1deg.nc
+!cached/enso_coeff_rmse_2p8deg.nc
+!cached/error_map_1deg.nc
+!cached/daily_anomaly_std_era5_map_1deg.nc
+!cached/gm_error_1deg.nc
+!cached/gm_error_1deg_normalized.nc
+!cached/error_dry_day_map_1deg.nc
+!cached/dry_day_frac_era5_map_1deg.nc
+!cached/combined_1deg_perturbed_sst_response_time_means.nc
+!cached/combined_2p8deg_perturbed_sst_response_time_means.nc

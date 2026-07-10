@@ -832,6 +832,36 @@ def compute_error(pred: xr.Dataset, target: xr.Dataset) -> xr.Dataset:
     error = transfer_attrs(pred, error)
     return error
 
+def linear_fit(x, y):
+    fit = np.polyfit(x, y, 1)
+    return fit[0], fit[1]
+
+def compute_decadal_trend(ds: xr.Dataset, start: str, end: str, time_dim_name: str) -> xr.Dataset:
+    ds_subset = ds.sel(**{time_dim_name: slice(start, end)})
+    trends, _ = xr.apply_ufunc(
+        linear_fit,
+        ds_subset.year / 10,
+        ds_subset,
+        input_core_dims=[['year'], ['year']],
+        output_core_dims=[[], []],
+        vectorize=True,
+        dask='parallelized',
+        dask_gufunc_kwargs=dict(allow_rechunk=True),
+    )
+    return transfer_attrs(ds, trends)
+
+def compute_annual_mean(ds: xr.Dataset, time_dim_name: str='time') -> xr.Dataset:
+    annual_mean_ds = ds.groupby(f"{time_dim_name}.year").mean()
+    return transfer_attrs(ds, annual_mean_ds)
+
+def compute_global_mean(ds: xr.Dataset, lat_dim: str='lat', lon_dim: str='lon') -> xr.Dataset:
+    weights = np.cos(np.deg2rad(ds[lat_dim]))
+    global_mean_ds = xr.Dataset()
+    global_vars = [var for var in ds.data_vars if all([dim in ds[var].dims for dim in [lat_dim, lon_dim]])]
+    for var in global_vars:
+        global_mean_ds[var] = ds[var].weighted(weights).mean(dim=[lat_dim, lon_dim])
+    return transfer_attrs(ds, global_mean_ds)
+
 def open_variable_from_cmip6_gcs_zarr(
     path: str,
     evaluation_variable: EvaluationVariable,
