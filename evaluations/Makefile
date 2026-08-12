@@ -1,4 +1,4 @@
-.PHONY: env test-env lab execute E1 E2 E3 E4 E5
+.PHONY: env test-env test lab execute E1 E2 E3 E4 E5
 
 ENV_NAME = aimip-evaluations
 CONDA_RUN = conda run -n $(ENV_NAME)
@@ -8,6 +8,9 @@ env:
 
 test-env:
 	cd notebooks && $(CONDA_RUN) python -c "import xarray, numpy, dask, cartopy, matplotlib, xesmf, healpy, netCDF4, s3fs, fsspec; from aimip_data_utils import AIMIP_EXPERIMENT_SUBMISSIONS; from enso_index import NINO34_INDEX; print('All imports OK')"
+
+test:
+	cd notebooks && $(CONDA_RUN) pytest test_aimip_data_utils.py
 
 lab:
 	cd notebooks && $(CONDA_RUN) jupyter lab
