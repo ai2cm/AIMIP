@@ -800,7 +800,7 @@ def compute_huss_from_tdas(tdas: xr.DataArray, ps: xr.DataArray) -> xr.DataArray
     return huss
 
 def convert_tdas_to_huss(ds: xr.Dataset) -> xr.Dataset:
-    if 'tdas' and 'ps' in ds.data_vars and 'huss' not in ds.data_vars:
+    if 'tdas' in ds.data_vars and 'ps' in ds.data_vars and 'huss' not in ds.data_vars:
         print("Converting 'tdas' to 'huss'.")
         ds['huss'] = compute_huss_from_tdas(ds['tdas'], ds['ps'])
         return ds.drop_vars(['tdas'])

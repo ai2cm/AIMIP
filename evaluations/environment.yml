@@ -17,3 +17,4 @@ dependencies:
   - healpy
   - netcdf4
   - jupyterlab
+  - pytest

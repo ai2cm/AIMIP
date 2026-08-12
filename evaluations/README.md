@@ -70,6 +70,7 @@ ERA5 monthly and daily data for use in AIMIP evaluations has also been made avai
 ```bash
 make env       # create the conda environment
 make test-env  # verify all dependencies are importable
+make test      # run the unit tests for the shared utility modules
 make lab       # launch JupyterLab interactively
 ```
 
