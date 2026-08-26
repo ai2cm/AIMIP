@@ -28,6 +28,7 @@ DEFAULT_TIME_LABELS = {
 }
 
 ACE_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_ACE2-ERA5_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
+ACE22_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_ACE2-2-ERA5_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
 ARCHES_WEATHER_AIMIP_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
 ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_aimip_r{i_r}i1p1f1_{grid}_{time_period}.nc'
 ARCHES_WEATHER_GEN_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeatherGen_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
@@ -44,6 +45,9 @@ FILE_TEMPLATES = {
     'ACE2.1-ERA5-aimip': ACE_FILE_TEMPLATE,
     'ACE2.1-ERA5-aimip-p2k': ACE_FILE_TEMPLATE,
     'ACE2.1-ERA5-aimip-p4k': ACE_FILE_TEMPLATE,
+    'ACE2.2-ERA5-aimip': ACE22_FILE_TEMPLATE,
+    'ACE2.2-ERA5-aimip-p2k': ACE22_FILE_TEMPLATE,
+    'ACE2.2-ERA5-aimip-p4k': ACE22_FILE_TEMPLATE,
     'ArchesWeather-aimip': ARCHES_WEATHER_AIMIP_FILE_TEMPLATE,
     'ArchesWeather-aimip-p2k': ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE,
     'ArchesWeather-aimip-p4k': ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE,
@@ -78,6 +82,7 @@ CATEGORICAL_COLORS = [
     "#CC79A7",  # reddish purple (Okabe-Ito)
     "#882255",  # wine           (Tol muted)
     "#999933",  # olive          (Tol muted)
+    "#332288",  # indigo         (Tol muted) — 9th, added for ACE2.2-ERA5
 ]
 
 @dataclasses.dataclass
@@ -257,6 +262,22 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         label='v20251130'
     ),
     ExperimentSubmission(
+        model_name='ACE2.2-ERA5',
+        submission_dir='Ai2/ACE2-2-ERA5',
+        experiment_name='aimip',
+        grid='gr',
+        grid_mapping={
+            'huss': 'gn',
+            'pr': 'gn',
+            'ps': 'gn',
+            'tas': 'gn',
+            'ts': 'gn',
+            'uas': 'gn',
+            'vas': 'gn',
+        },
+        label='v20260825'
+    ),
+    ExperimentSubmission(
         model_name='ArchesWeather',
         submission_dir='ArchesWeather/ArchesWeather-V2',
         experiment_name='aimip',
@@ -386,6 +407,22 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         label='v20251130'
     ),
     ExperimentSubmission(
+        model_name='ACE2.2-ERA5',
+        submission_dir='Ai2/ACE2-2-ERA5',
+        experiment_name='aimip-p2k',
+        grid='gr',
+        grid_mapping={
+            'huss': 'gn',
+            'pr': 'gn',
+            'ps': 'gn',
+            'tas': 'gn',
+            'ts': 'gn',
+            'uas': 'gn',
+            'vas': 'gn',
+        },
+        label='v20260825'
+    ),
+    ExperimentSubmission(
         model_name='ArchesWeather',
         submission_dir='ArchesWeather/ArchesWeather-V2',
         experiment_name='aimip-p2k',
@@ -476,6 +513,22 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
             'vas': 'gn',   
         },
         label='v20251130'
+    ),
+    ExperimentSubmission(
+        model_name='ACE2.2-ERA5',
+        submission_dir='Ai2/ACE2-2-ERA5',
+        experiment_name='aimip-p4k',
+        grid='gr',
+        grid_mapping={
+            'huss': 'gn',
+            'pr': 'gn',
+            'ps': 'gn',
+            'tas': 'gn',
+            'ts': 'gn',
+            'uas': 'gn',
+            'vas': 'gn',
+        },
+        label='v20260825'
     ),
     ExperimentSubmission(
         model_name='ArchesWeather',
@@ -867,7 +920,7 @@ def open_variable_from_cmip6_gcs_zarr(
     evaluation_variable: EvaluationVariable,
 ) -> tuple[xr.Dataset, bool]:
     try:
-        variable_dataset = xr.open_zarr(path)
+        variable_dataset = xr.open_zarr(path, storage_options={"token": "anon"})
     except FileNotFoundError:
         print(f"Not found: {path}")
         missing = True
@@ -891,7 +944,7 @@ def load_gfdl_am4_from_cmip6_gcs(
     root_dir = zarr_template.format(
         varname=eval_variables[0].short_name, version_tag=DEFAULT_GFDL_AM4_CMIP6_VERSION_TAG
     ).split(eval_variables[0].short_name)[0]
-    fs, *_ = fsspec.get_fs_token_paths(root_dir)
+    fs, *_ = fsspec.get_fs_token_paths(root_dir, storage_options={"token": "anon"})
     all_variables = [os.path.basename(path) for path in fs.ls(root_dir)]
     eval_variables_shortname = [eval_variable.short_name for eval_variable in eval_variables]
     available_variables = list(set(all_variables).intersection(set(eval_variables_shortname)))
