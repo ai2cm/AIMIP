@@ -37,12 +37,19 @@ recipe, and it turns out to matter here.
 
 **The four models.**
 
-| name | what it is |
-|---|---|
-| **ACE2.1** | the older generation, already submitted to the AIMIP intercomparison |
-| **ACE2.2** | the newer generation; better overall, but differs from ACE2.1 in ~7 ways |
-| **P1** | ACE2.2's recipe with ACE2.1's choice of training years. Three seeds. |
-| **P2** | P1, but with near-surface fields made diagnostic instead of prognostic |
+| name | what it is | changes vs ACE2.2 |
+|---|---|---|
+| **ACE2.1** | the older generation, already submitted to the AIMIP intercomparison | ~7 |
+| **ACE2.2** | the newer generation; better overall, and the model we would otherwise submit. One seed. | — |
+| **P1** | ACE2.2's recipe with ACE2.1's choice of training years. Three seeds. | 1: the training years |
+| **P2** | P1, *plus* near-surface fields made diagnostic instead of prognostic. One seed. | 2: the training years **and** the near-surface treatment |
+
+**The variants form a chain, not a fan:** ACE2.2 -> P1 (change the training years) -> P2 (also
+deprognostify the near-surface fields). P2 was built on P1 rather than directly on ACE2.2 so
+that it would have a three-seed spread to be judged against, since ACE2.2 has only one seed.
+The consequence is that P1, not ACE2.2, is the only clean control for the near-surface
+question -- comparing P2 to ACE2.2 conflates the two changes. Everywhere else in this report
+ACE2.2 is the reference, since it is the model the variants were trying to improve on.
 
 ---
 
@@ -95,9 +102,15 @@ were a real handicap, P1 would sit clearly worse than ACE2.2. It does not — AC
 (0.879–1.088). The same holds for annual-mean error, and for surface temperature, 2 m
 temperature and El Niño response taken individually.
 
-**So we can adopt ACE2.1's training split.** The experiment gets simpler to describe with no
-measured cost. What we *cannot* say is that the span provably has no effect — with three
-seeds the measurement cannot resolve anything smaller than the seed spread.
+**On these two measures we can adopt ACE2.1's training split** — the experiment gets simpler
+to describe at no measured cost in mean climate or annual error. What we *cannot* say is that
+the span provably has no effect: with three seeds the measurement cannot resolve anything
+smaller than the seed spread.
+
+**And the trend is a real exception**, treated in its own section below. There P1's average
+falls between the two generations rather than matching ACE2.2, in the direction predicted for
+a shorter, cooler training period. That is why this conclusion is scoped to the two error
+measures rather than stated as a general verdict on the split.
 
 ### The newer generation is better in-sample, as expected
 
@@ -146,11 +159,38 @@ in-sample counterpart of the forced-response gap seen in the intercomparison, an
 consistent with the leading explanation for it: ACE2.2 has an explicit global-mean pathway
 that ACE2.1 lacks.
 
-**But the trend is strongly seed-dependent.** P1's three seeds span 32% to 46%, a range wider
-than the gap between the two generations, and ACE2.1's 36% sits inside it. So "ACE2.2 beats
-ACE2.1 on trend" is supported, while any comparison between P1 and ACE2.1 on this measure is
-not — one seed of P1 is worse than ACE2.1 and two are better. A trend number from a single
-model should not be read as a property of its recipe.
+**P1 does not inherit all of that advantage.** Averaging its three seeds — 46%, 45% and 32%
+— gives 41%, which falls between ACE2.1's 36% and ACE2.2's 51%. Since the training span is
+the *only* difference between P1 and ACE2.2, the span is the natural explanation, and the
+direction is the one predicted for a shorter, cooler period. Taking the two generations'
+15-point difference as the whole effect, P1 retains about a third of it: (41 − 36) / (51 − 36).
+
+**That fraction is a point estimate and should be read as one.** P1's three seeds span 32% to
+46% — a range wider than the 15-point gap being divided — so the same arithmetic gives two
+thirds if the weakest seed is excluded. Both endpoints are single seeds with no spread of
+their own. The ordering is the finding; the fraction is an illustration of its size, not a
+measurement of it, and resolving it would take several more seeds rather than one.
+
+**The same ordering appears in four other fields**, so it is not an artifact of 2 m
+temperature alone. Repeating the calculation on each field's annual series:
+
+| field | P1 three-seed mean | ACE2.2 | z |
+|---|---|---|---|
+| 2 m temperature | 41% | 51% | +1.28 |
+| surface temperature | 54% | 61% | +1.61 |
+| 850 hPa temperature | 44% | 55% | +1.15 |
+| 500 hPa height | 37% | 44% | +1.01 |
+| precipitation rate | 126% | 140% | +2.02 |
+
+**This is suggestive, not established, and the field count is misleading.** Every P1 seed
+falls below ACE2.2 in every field, which is fifteen comparisons -- but they are not fifteen
+tests. A model's fields are strongly correlated with one another, so a single model that
+draws well scores well on all of them at once; the near-surface section below shows exactly
+that happening in the other direction. The independent dimension is the seed, and there
+ACE2.2 is one draw against P1's three. Under the null that all four are exchangeable, the
+probability that ACE2.2 is the largest is 1/4, and five correlated fields do not compound it.
+ACE2.2's configuration has one seed, so the comparison has no spread on that side at all.
+
 
 **The offsets are small here**, between −0.034 and +0.059 K, where the production simulations
 of the same two generations run +0.11 K and +0.19 K warm. That difference is the
@@ -167,6 +207,20 @@ P2 reconstructs the four near-surface fields afterwards instead of evolving them
 36-year rollout they get 2.1–2.9× worse — far outside anything the seeds produce, so this is
 a real effect and the clearest result in the campaign.
 
+**ACE2.1 itself confirms it independently.** P2 was built to imitate ACE2.1's treatment of
+these fields, and it lands on ACE2.1's actual numbers to within 10%:
+
+| relative to ACE2.2 | 2 m temperature | 2 m humidity | 10 m eastward | 10 m northward |
+|---|---|---|---|---|
+| P2 (our variant) | +132% | +242% | +67% | +120% |
+| ACE2.1 (the real model) | +156% | +210% | +79% | +143% |
+| P1 (prognostic, ACE2.1's span) | -7% | +17% | -20% | -19% |
+
+So the penalty is not an artifact of how P2 was implemented; it is the real generational
+difference, measured two ways that share no code path. The third row is the control: P1 keeps
+these fields prognostic while adopting ACE2.1's training span, and matches or beats ACE2.2 on
+three of the four. The treatment is what matters, not the span.
+
 The penalty grows with rollout length: on a five-year window 2 m temperature was 1.4× worse,
 over 36 years it is 2.5×. That fits the mechanism, since a reconstruction network reading a
 frozen state has no boundary-layer memory to carry forward, so the deficit compounds.
@@ -181,6 +235,32 @@ evolving the field directly.
 The cost is not confined to those four fields. Pressure levels near the ground, which the
 intercomparison also scores, are about 9% worse in P2, while levels above 250 hPa are
 unaffected. The deficit is graded by height.
+
+**P2 is not better on the fields it did not change.** Removing four fields from the model's
+state might have freed capacity for everything else, which would argue for some gentler
+version of the change. Scored against ACE2.2 -- the model both variants modify -- P2 does look
+better on the 30 fields it left alone:
+
+| relative to ACE2.2 | 30 unchanged fields | better | near-surface |
+|---|---|---|---|
+| P1 seed 0 | 1.029 | 12/30 | 0.90x |
+| P1 seed 1 | 0.835 | 22/30 | 0.74x |
+| P1 seed 2 | 1.057 | 13/30 | 1.00x |
+| P2 | 0.887 | 20/30 | 2.26x |
+
+Two things dissolve it. P1 seed 1 reaches 0.835 with near-surface fields fully prognostic, so
+scoring well across nearly every field is a whole-model property the seed alone produces;
+with P2 at one seed its 20-of-30 count is one draw, not 20 tests, and against a seed spread of
+0.121 it sits at z = -0.72. And the surface energy fluxes, where a mechanism would plausibly
+live since the turbulent fluxes read 2 m temperature, humidity and the 10 m winds directly,
+do not support one either: P2 beats ACE2.2 on only 4 of 8, and its apparent flux advantage
+appears only against P1, which is itself worse than ACE2.2 there. P2 was recovering something
+the split change cost, not improving on the model it started from.
+
+The comparison in the figure above uses P1 rather than ACE2.2 as its reference, because P2
+differs from ACE2.2 in two ways -- the training span and the near-surface treatment -- and
+only P1 isolates the second.
+
 
 ### The top of the model drifts, and it is a seed lottery
 
@@ -232,31 +312,42 @@ artifact, not a property of the models.
 
 ## What we decided
 
-**P1 is the configuration to submit.** It adopts ACE2.1's training span, which simplifies the
-description at no measured cost, and keeps near-surface fields prognostic, which the
-measurements show is load-bearing.
+**Near-surface fields stay prognostic.** This is the campaign's one decisive result, and it
+holds whatever else is chosen.
+
+**The training span is unresolved, and P1 is no longer the presumed submission.** P1 adopts
+ACE2.1's span, which costs nothing on mean climate or annual error; but on reproduced
+in-sample trend every P1 seed falls below ACE2.2, at p = 1/4 under exchangeability. That is
+too weak to act on and too consistent to ignore, and it bears on E2, which the intercomparison
+scores. The blocking gap is that ACE2.2 has a single seed, so its 51% may itself be a high
+draw, and nothing in this round measures that.
 
 **P2 is not adopted.** Its near-surface penalty is disqualifying for an intercomparison that
-scores exactly those fields. Two variants might capture whatever benefit removing them has
-without the readout cost — a larger reconstruction network, or making the fields
-diagnostic-but-jointly-trained rather than fitted at the end — but neither fits this
-timeline, and the case for them is weaker than it first appeared, since P2's core turned out
-to be within the seed spread rather than clearly better.
+scores exactly those fields, and the compensating benefit it appeared to bring elsewhere did
+not survive: measured against ACE2.2, P2's unchanged fields land inside the seed spread, and
+P1 seed 1 improves on ACE2.2 by more than P2 does without touching the prognostic set.
 
-**A fourth P1 seed remains open.** The argument for it is protocol symmetry: ACE2.1's
-submitted model was the best of four seeds, and P1's would be the best of three, which confers
-slightly less benefit — about 2% on this metric. It buys no new conclusion.
+**A fourth P1 seed remains open, and would not settle the trend question.** It narrows P1's
+three-seed average only modestly, where the trend result needs several more seeds to resolve;
+and seed selection cannot mitigate the loss in any case, since seeds sample around a mean the
+configuration sets, and choosing the best-trend seed would mean tuning to a scored
+intercomparison metric. The remaining argument is protocol symmetry with ACE2.1's best-of-four,
+worth about 2% on the error measures.
 
 ## What we still do not know
 
-- **The size of the training-span effect.** Smaller than the seed spread; not zero.
+- **Whether the training span costs trend skill, and how much.** P1's average falls between
+  the two generations as predicted, and the ordering repeats across five fields, but ACE2.2 is
+  a single draw and the fields are correlated, so the evidence stands at p = 1/4. This is the
+  campaign's least resolved question, and the one with the clearest next measurement.
 - **Why the top model layer drifts at all.** We established that it is confined to one
   layer, seed-dependent, and present in both recipes, but not what causes it. ACE has a known
   moisture-drift problem there; this quantifies it without explaining it.
-- **Whether removing near-surface fields helps the core at all.** P2's core sits inside P1's
-  seed spread, so the earlier suggestion that those fields "clutter" the model is unsupported
-  by this evidence either way.
-- **How much of any single model's score is its seed.** With ~10% seed spread and one seed
+- **Whether removing near-surface fields helps the core at all.** Measured against ACE2.2,
+  P2's core lands inside the seed spread (z = -0.72), so the earlier suggestion that those
+  fields "clutter" the model is unsupported by this evidence either way. Answering it would
+  need seeds of the deprognostified configuration, which has one.
+- **How much of any single model's score is its seed.** With ~12% seed spread and one seed
   each, ACE2.1's and ACE2.2's published numbers carry an unquantified uncertainty of that size.
 
 ---
@@ -276,18 +367,28 @@ numerically tiny.
 
 | model | run | stage | fields |
 |---|---|---|---|
-| ACE2.1 RS3 | `long36-ace21-rs3` | base | 28 |
+| ACE2.1 RS3 | `long36-ace21-plevft` | plev FT | 35 |
 | ACE2.2 | `long36-ace22-stage2` | 2 | 34 |
 | P1 seeds 0/1/2 | `long36-p1-rs0/1/2` | 2 | 34 |
 | P2 | `long36-p2-rs0` | 2 | 30 |
 | P2 | `long36-p2-stage3` | 3 | 34 |
 
+ACE2.1's run uses the pressure-level fine-tuned checkpoint, translated to the current config
+schema; it is the submitted ACE2.1 model and the only one carrying near-surface fields. On all
+28 fields it shares with the earlier `long36-ace21-rs3` backfill it reproduces that run exactly
+(ratio 1.0000, range 1.000-1.000), which both validates the translation and confirms ACE2.1 is
+deterministic -- noise conditioning is an ACE2.2 feature.
+
 Aggregates use the fields common to all models compared, minus the top model layer, scored as
-median per-field ratios. Near-surface figures come from the 36-year rollout; the five-year
+median per-field ratios. They also exclude the four near-surface fields **by choice**, not for
+lack of data: those carry the campaign's largest effect and are reported on their own above, so
+folding them into a cross-model average would double-count the same finding. Near-surface figures come from the 36-year rollout; the five-year
 figure quoted for contrast is the 2009-2014 inline evaluation at stage 3, restricted to epochs
 >= 8 where P2's reconstruction network has converged.
 
-**Two known contaminants, neither re-run.** These rollouts are unseeded --
+**Two known contaminants, neither re-run.** Both apply to ACE2.2, P1 and P2 only; ACE2.1 is
+deterministic, as its two independent backfills reproducing each other exactly demonstrate.
+These rollouts are unseeded --
 `InferenceEvaluatorConfig` has a `seed` field the configs do not set -- so each draws its own
 noise from these noise-conditioned models. Comparing P2's stage-2 and stage-3 runs on the 30
 fields they share, which should differ only in the decoder, gives a 2.7% median difference.
@@ -325,8 +426,8 @@ earlier headline that ACE2.2 was 40% worse than ACE2.1, and an apparent core adv
 
 | # | hypothesis | explains | status / evidence |
 |---|---|---|---|
-| 1 | `global_mean_removal` gives ACE2.2 a global-mean pathway ACE2.1 lacks | E5 forced response, E2 trends, part of E1 on the warm test decade | supported: ACE2.2 reproduces 50% of ERA5's observed warming (+0.316 of +0.625 K, 2015–2024 vs 1979–2008) and warms +2.00 K under +4 K SST; ACE2.1 reproduces 31% of observed warming but only +0.275 K under +4 K, i.e. it responds to patterned warming and barely at all to a uniform shift. Both models reproduce the same fraction of observed warming inside and outside their training spans. ENSO's global-mean temperature signal is transmitted in full (no uniform component in the E3 coefficient error), so the shortfall is specific to low-frequency shifts. **Confounded with the longer training period** (1979–2013 vs 1979–2008). The size of that confound is not established: a regression-attenuation estimate gave ~7 percentage points, but attenuation describes noise in the *predictor*, and here time and the prescribed SSTs are exact, so the framing does not apply. Only the sign is robust — a shorter, cooler span should not *increase* the fraction reproduced. **Measured by P1, and the confound is real for trend:** on mean climate and annual error the span costs nothing, but on reproduced in-sample trend P1 keeps only ~1/3 of ACE2.2's advantage over ACE2.1 (41% against 51% and 36%). Predicted direction, magnitude unresolved at n=3 (ACE2.2 is 1.2 sd above P1's mean, and is itself one seed). So part of what this hypothesis attributes to `global_mean_removal` may belong to the training span |
-| 2 | Multi-step fine-tuning + larger trunk improved the core; near-surface fields additionally gained from becoming prognostic/jointly trained | E1: head-vs-head plev fields −10–18% (core share); near-surface fields −25–31% | **confirmed for the near-surface half** by the P2 variant (see below): reverting those fields to stage-3 secondary diagnostics costs 34–94% on them. FT vs architecture still not separated for the core half |
+| 1 | `global_mean_removal` gives ACE2.2 a global-mean pathway ACE2.1 lacks | E5 forced response, E2 trends, part of E1 on the warm test decade | supported: ACE2.2 reproduces 50% of ERA5's observed warming (+0.316 of +0.625 K, 2015–2024 vs 1979–2008) and warms +2.00 K under +4 K SST; ACE2.1 reproduces 31% of observed warming but only +0.275 K under +4 K, i.e. it responds to patterned warming and barely at all to a uniform shift. Both models reproduce the same fraction of observed warming inside and outside their training spans. ENSO's global-mean temperature signal is transmitted in full (no uniform component in the E3 coefficient error), so the shortfall is specific to low-frequency shifts. **Confounded with the longer training period** (1979–2013 vs 1979–2008). The size of that confound is not established: a regression-attenuation estimate gave ~7 percentage points, but attenuation describes noise in the *predictor*, and here time and the prescribed SSTs are exact, so the framing does not apply. Only the sign is robust — a shorter, cooler span should not *increase* the fraction reproduced. **Measured by P1:** on mean climate and annual error the span costs nothing. On reproduced in-sample trend P1's three-seed mean (41%) falls between ACE2.1 (36%) and ACE2.2 (51%) — the predicted direction, retaining roughly a third of the generational difference as a point estimate, but with P1's seeds spanning 32-46% the size is not resolved at n=3. So part of what this hypothesis attributes to `global_mean_removal` may belong to the training span; see the trend section |
+| 2 | Multi-step fine-tuning + larger trunk improved the core; near-surface fields additionally gained from becoming prognostic/jointly trained | E1: head-vs-head plev fields −10–18% (core share); near-surface fields −25–31% | **confirmed for the near-surface half**, twice over: reverting those fields to stage-3 secondary diagnostics (P2) costs 67–242% on the 36-year rollout, and ACE2.1's own plev-FT checkpoint carries the same penalty (79–210%) within 10% of P2's. P1 holds those fields prognostic on ACE2.1's span and matches ACE2.2, so the gain is the treatment and not the span. FT vs architecture still not separated for the core half |
 | 3 | CRPS + noise conditioning preserves variance that MSE damps | E4 daily variability (tas −19%, pr −9%) | plausible, untested |
 | 4 | ACE2.1's in-sample E3 temperature advantage is deterministic reproduction of the realized training-period responses (shared sampling noise with the ERA5 reference), plus a best-of-4-seed winner's curse | E3 tas/ts regression | supported: confined to 1979–2014 (parity on 2015–2024); entirely in the pattern component; magnitude tracks boundary-forced reproducibility (ts > tas > ta > hus > ps > winds); winds/pr improve in all periods |
 | 5 | Multi-step fine-tuning damps the low-frequency global-mean mode, buying rollout stability at some cost in forced response | the ~50% shortfall in both E5 and E2 metrics | open. The stage-1 probe has a *larger* +4 K response (+2.68 vs +2.00 K) but an incoherent historical trend and a detrended interannual global-mean tas spread of 0.455 K against ERA5's 0.122 K, so what fine-tuning removes may be undamped variance rather than usable signal. The final model ends up under-dispersed (0.054 K), consistent with over-damping. Discriminator, free from the campaign: across P1's three seeds a real trade predicts the lowest-bias seed has the weakest +4 K response; noise suppression predicts no relation |

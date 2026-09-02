@@ -76,21 +76,29 @@ ratio_chart([0.982, 0.956, 0.980, 1.013, 0.953, 0.954], (0.953, 1.013),
             "Error of the annual-mean series, which carries the trend. 25 fields.",
             "median per-field error ratio  (1.0 = same as P1 average)")
 
-# fig 3 -- the near-surface penalty from demoting those fields to a diagnostic decoder
+# fig 3 -- the near-surface penalty, measured two independent ways against ACE2.2:
+# P2 (built to reproduce ACE2.1's treatment) and ACE2.1 itself, from long36-ace21-plevft.
 fields = ["2 m temperature", "2 m humidity", "10 m eastward wind", "10 m northward wind"]
-pct = [150.2, 193.0, 108.4, 171.4]
-fig, ax = plt.subplots(figsize=(8.2, 3.6))
+p2_pct = [131.6, 242.3, 67.1, 119.5]
+a21_pct = [155.7, 209.9, 78.7, 143.4]
+fig, ax = plt.subplots(figsize=(8.4, 3.9))
 y = np.arange(len(fields))[::-1]
-bars = ax.barh(y, pct, height=0.6, color=OLIVE)
-for b in bars: b.set_linewidth(0)
+h = 0.34
+b1 = ax.barh(y + h/2, p2_pct, height=h, color=OLIVE, label="P2  (our variant)")
+b2 = ax.barh(y - h/2, a21_pct, height=h, color=INDIGO, label="ACE2.1  (the real model)")
+for bars in (b1, b2):
+    for b in bars: b.set_linewidth(0)
 ax.set_yticks(y); ax.set_yticklabels(fields, fontsize=10, color=INK)
-ax.set_xlim(0, max(pct) * 1.16)
-for b, v in zip(bars, pct):
-    ax.text(v + max(pct)*0.015, b.get_y()+b.get_height()/2, f"+{v:.0f}%", va="center",
-            fontsize=9.5, color=INK)
-style(ax, "how much worse P2 is than the P1 average  (0% would mean no difference)",
+ax.set_xlim(0, max(max(p2_pct), max(a21_pct)) * 1.18)
+for bars, vals in ((b1, p2_pct), (b2, a21_pct)):
+    for b, v in zip(bars, vals):
+        ax.text(v + max(a21_pct)*0.012, b.get_y()+b.get_height()/2, f"+{v:.0f}%",
+                va="center", fontsize=9, color=INK)
+ax.legend(loc="lower right", frameon=False, fontsize=9)
+style(ax, "how much worse than ACE2.2  (0% would mean no difference)",
       "Cost of predicting near-surface fields indirectly",
-      "P2 removes these four fields from the model's own state and reconstructs them afterwards.")
+      "Both reconstruct these four fields instead of evolving them. P2 lands on ACE2.1 "
+      "to within 10%.")
 fig.tight_layout(); fig.savefig(OUT/"fig3-near-surface-penalty.png", dpi=200); plt.close(fig)
 
 # fig 4 -- seed spread, the two recipes side by side (a null result)
