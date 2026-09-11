@@ -6,9 +6,8 @@ ERA5 reference data into a versioned Hugging Face dataset repository,
 
 The AIMIP archive is hosted by DKRZ at `s3://ai-mip` (see the [Data section of the evaluation
 README](../evaluations/README.md#data)). The Hugging Face dataset is a snapshot of that archive,
-published so the data stays reachable while the DKRZ store is unavailable and so the manuscript
-can cite a DOI-backed, immutable revision. If the DKRZ store returns, the two coexist: DKRZ as the
-live archive, Hugging Face as the citable snapshot.
+published to give the manuscript a DOI-backed, immutable revision to cite and to provide a second
+access route. The two coexist: DKRZ is the live archive, Hugging Face the citable snapshot.
 
 The dataset keeps the `local_data/` layout the evaluation notebooks expect, so
 
@@ -44,7 +43,7 @@ source tree live in [`assets/`](assets/) (root dataset card, root license, Ai2 l
   `../evaluations/environment.yml`, which includes `huggingface_hub[hf_xet]` and `pyyaml`).
 - A Hugging Face account with write access to the `allenai` organization: `hf auth login`, then `make test-env`.
 - A source tree in the `local_data` layout. `make fetch-source` syncs the in-scope prefixes from
-  the DKRZ archive with `aws s3 sync` (requires the AWS CLI and a reachable store); otherwise
+  the DKRZ archive with `aws s3 sync` (requires the AWS CLI and access to the store); otherwise
   point `source_dir` in `dataset.yaml` at an existing mirror.
 - `staging_dir` on the same filesystem as `source_dir` (the staging tree is hard links, so it
   costs no extra disk).

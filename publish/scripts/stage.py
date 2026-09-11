@@ -20,19 +20,27 @@ from config import load
 MANIFEST_NAME = "MANIFEST.sha256"
 
 
-def excluded(rel: str, globs: list[str]) -> bool:
-    return any(fnmatch.fnmatch(rel, g) for g in globs)
+def excluded(rel: str, cfg: dict) -> bool:
+    """True if a staging-relative path is excluded by name or by glob.
+
+    `exclude_dirs` is matched against every path component, so a directory is dropped
+    wherever it appears, including at the root (a glob like `*/.ipynb_checkpoints/*`
+    silently misses that case).
+    """
+    parts = rel.split("/")
+    if any(p in cfg.get("exclude_dirs", []) for p in parts[:-1]):
+        return True
+    return any(fnmatch.fnmatch(rel, g) for g in cfg.get("exclude_globs", []))
 
 
 def plan_source(cfg: dict) -> dict[str, str]:
     """Map staging-relative path -> absolute source path for every in-scope source file."""
     src_root = cfg["source_dir"]
-    globs = cfg.get("exclude_globs", [])
     planned: dict[str, str] = {}
     for entry in cfg["include"]:
         abs_entry = os.path.join(src_root, entry)
         if os.path.isfile(abs_entry):
-            if not excluded(entry, globs):
+            if not excluded(entry, cfg):
                 planned[entry] = abs_entry
             continue
         if not os.path.isdir(abs_entry):
@@ -41,18 +49,22 @@ def plan_source(cfg: dict) -> dict[str, str]:
             for name in files:
                 abs_path = os.path.join(dirpath, name)
                 rel = os.path.relpath(abs_path, src_root)
-                if not excluded(rel, globs):
+                if not excluded(rel, cfg):
                     planned[rel] = abs_path
     return planned
 
 
 def plan_assets(cfg: dict) -> dict[str, str]:
+    """Assets are filtered by the same rules: editing a card in Jupyter leaves a
+    .ipynb_checkpoints directory next to it, which must not reach the dataset."""
     assets_root = cfg["assets_dir"]
     planned: dict[str, str] = {}
     for dirpath, _, files in os.walk(assets_root):
         for name in files:
             abs_path = os.path.join(dirpath, name)
-            planned[os.path.relpath(abs_path, assets_root)] = abs_path
+            rel = os.path.relpath(abs_path, assets_root)
+            if not excluded(rel, cfg):
+                planned[rel] = abs_path
     return planned
 
 

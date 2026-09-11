@@ -39,10 +39,16 @@ include:
   - ERA5/mon_1deg
   - ERA5/day_1deg
 
+# Directory names dropped wherever they appear, at any depth including the root.
+exclude_dirs:
+  - .ipynb_checkpoints         # Jupyter artefacts, in the source tree and next to edited assets
+
 # fnmatch patterns tested against each file's path relative to `source_dir`.
 exclude_globs:
-  - "*/.ipynb_checkpoints/*"   # Jupyter artefacts
   - "*.nc.~*~"                 # truncated/duplicate upload leftovers (NeuralGCM aimip-p4k r1 daily)
+  # ArchesWeatherGen-V2/aimip-era5/ holds 13 files nested one level too deep; each is
+  # byte-identical (sha256) to the aimip-p2k file already published at its correct path.
+  - "ArchesWeather/ArchesWeatherGen-V2/aimip-era5/*"
 
 # Small files placed into the staging tree at the same relative path, overriding
 # anything linked from `source_dir` (root README.md dataset card, root LICENSE.txt,
@@ -51,7 +57,7 @@ assets_dir: assets
 
 # Constraints enforced by `make check`.
 expected:
-  min_files: 4900
+  min_files: 4880
   max_files: 5100
   total_bytes_min: 1.70e12
   total_bytes_max: 1.85e12
@@ -59,10 +65,12 @@ expected:
     - README.md
     - LICENSE.txt
   forbidden_prefixes:
+    - ArchesWeather/ArchesWeatherGen-V2/aimip-era5/
     - MPI-M/
     - ERA5/mon/
     - GPCP-SG/
     - Ai2/ACE2-2-ERA5/
+  forbidden_dirs:
+    - .ipynb_checkpoints
   forbidden_globs:
-    - "*/.ipynb_checkpoints/*"
     - "*.nc.~*~"

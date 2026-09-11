@@ -72,6 +72,8 @@ def check(cfg: dict) -> int:
     for r in rels:
         if any(r.startswith(p) for p in exp.get("forbidden_prefixes", [])):
             problems.append(f"forbidden prefix: {r}")
+        if any(d in r.split("/")[:-1] for d in exp.get("forbidden_dirs", [])):
+            problems.append(f"forbidden directory: {r}")
         if any(fnmatch.fnmatch(r, g) for g in exp.get("forbidden_globs", [])):
             problems.append(f"forbidden pattern: {r}")
     for req in exp.get("required_root_files", []):
