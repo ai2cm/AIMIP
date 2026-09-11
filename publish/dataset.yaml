@@ -1,0 +1,68 @@
+# Declarative scope for publishing the AIMIP Phase 1 submissions as a Hugging Face dataset.
+#
+# All relative paths are resolved against the directory containing this file.
+# Change scope here (e.g. add a new submission directory to `include`), then rerun
+# `make stage manifest check` and `make upload`.
+
+repo_id: allenai/aimip-phase1-submissions
+repo_type: dataset
+
+# Local tree in the `local_data` layout described in evaluations/README.md, i.e. a
+# mirror of the AIMIP archive at the DKRZ S3 store (see `s3_source`).
+source_dir: ../local_data
+
+# Where the publishable tree is assembled. Files are hard-linked from `source_dir`,
+# so this must be on the same filesystem and costs no extra disk.
+staging_dir: ~/hf-staging/aimip-phase1-submissions
+
+# DKRZ archive used by `make fetch-source` to materialize `source_dir` (only works
+# while the store is reachable).
+s3_source: s3://ai-mip
+s3_endpoint: https://s3.eu-dkrz-1.dkrz.cloud
+
+# Directories (copied whole) or single files, relative to `source_dir`.
+# Evaluation-only scope: everything the E1-E5 notebooks on `main` read.
+include:
+  - Ai2/ACE2-1-ERA5
+  - Ai2/DATASET_CARD.md
+  - Ai2/LICENSE-DATASET
+  - ArchesWeather/ArchesWeather-V2
+  - ArchesWeather/ArchesWeatherGen-V2
+  - DLESyM/DLESyM
+  - Google/NeuralGCM
+  - Google/NeuralGCM-HRD
+  - NVIDIA/CMIP6/AIMIP/NVIDIA/cBottle-1-3
+  - NVIDIA/README.md
+  - NVIDIA/data-card.md
+  - NVIDIA/config.json
+  - UMD-PARETO/MD-1p5
+  - ERA5/mon_1deg
+  - ERA5/day_1deg
+
+# fnmatch patterns tested against each file's path relative to `source_dir`.
+exclude_globs:
+  - "*/.ipynb_checkpoints/*"   # Jupyter artefacts
+  - "*.nc.~*~"                 # truncated/duplicate upload leftovers (NeuralGCM aimip-p4k r1 daily)
+
+# Small files placed into the staging tree at the same relative path, overriding
+# anything linked from `source_dir` (root README.md dataset card, root LICENSE.txt,
+# Ai2/README.txt license notice).
+assets_dir: assets
+
+# Constraints enforced by `make check`.
+expected:
+  min_files: 4900
+  max_files: 5100
+  total_bytes_min: 1.70e12
+  total_bytes_max: 1.85e12
+  required_root_files:
+    - README.md
+    - LICENSE.txt
+  forbidden_prefixes:
+    - MPI-M/
+    - ERA5/mon/
+    - GPCP-SG/
+    - Ai2/ACE2-2-ERA5/
+  forbidden_globs:
+    - "*/.ipynb_checkpoints/*"
+    - "*.nc.~*~"
