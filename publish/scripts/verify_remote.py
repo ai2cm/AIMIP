@@ -23,6 +23,9 @@ from huggingface_hub.utils.sha import git_hash
 from config import load
 from manifest import MANIFEST_NAME, read_manifest, sha256_of
 
+# Created and maintained by the Hub itself, never present in the staging tree.
+HUB_MANAGED = {".gitattributes"}
+
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -47,9 +50,9 @@ def main() -> None:
     }
 
     missing = sorted(set(local) - set(remote))
-    extra = sorted(set(remote) - set(local))
+    extra = sorted(set(remote) - set(local) - HUB_MANAGED)
     mismatched: list[str] = []
-    for rel in sorted(set(local) & set(remote)):
+    for rel in sorted((set(local) & set(remote)) - HUB_MANAGED):
         entry = remote[rel]
         path = os.path.join(staging, rel)
         local_size = os.path.getsize(path)
@@ -67,7 +70,9 @@ def main() -> None:
                 if git_hash(f.read()) != str(entry.blob_id).lower():
                     mismatched.append(f"{rel}: git blob sha1 differs")
 
-    print(f"manifest: {len(local)} files; remote revision '{args.revision}': {len(remote)} files")
+    hub_files = sorted(set(remote) & HUB_MANAGED)
+    print(f"manifest: {len(local)} files; remote revision '{args.revision}': {len(remote)} files"
+          + (f" (ignoring Hub-managed: {', '.join(hub_files)})" if hub_files else ""))
     print(f"missing from repo: {len(missing)}; extra in repo: {len(extra)}; mismatched: {len(mismatched)}")
     for label, items in (("MISSING", missing), ("EXTRA", extra), ("MISMATCH", mismatched)):
         for x in items[:20]:
