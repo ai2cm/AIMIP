@@ -1,0 +1,1 @@
+ACE2.1-ERA5 AIMIP submission, copyright 2025 by the Allen Institute for Artificial Intelligence, is licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).

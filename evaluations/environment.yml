@@ -17,3 +17,7 @@ dependencies:
   - healpy
   - netcdf4
   - jupyterlab
+  - pyyaml
+  - pip
+  - pip:
+      - huggingface_hub[hf_xet]  # publish/: Hugging Face dataset publishing workflow
