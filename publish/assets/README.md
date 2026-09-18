@@ -13,7 +13,7 @@ tags:
 
 ## Summary
 
-This dataset contains output from six model submission groups' ~46-year atmospheric simulations produced as contributions to the AI Model Intercomparison Project (AIMIP) Phase 1. AIMIP systematically evaluates AI weather/climate models trained on ERA5 reanalysis by running standardized AMIP-style simulations and comparing their climate statistics against reference observations and conventional models.
+This dataset contains output from six model submission groups' ~46-year atmospheric simulations produced as contributions to the AI Model Intercomparison Project (AIMIP) Phase 1. AIMIP systematically evaluates AI weather/climate models trained on ERA5 reanalysis by running standardized AMIP-style simulations and comparing their climate statistics against the ERA5 reanalysis and a conventional climate model.
 
 There are currently eight model submissions from the six model submission groups. For each submission, there are typically 15 simulations spanning 5 ensemble members (different initial atmospheric conditions) and 3 sea surface temperature (SST) forcing scenarios — historical baseline, +2 K, and +4 K uniform global SST perturbations — covering October 1978 through December 2024. Outputs are CMIP6-compliant NetCDF files at monthly and, for most submissions, daily mean temporal resolution, at approximately 1° global resolution, on each model's own grid (NeuralGCM is the exception, at 2.8°).
 
@@ -48,10 +48,9 @@ Model and code citations follow Table 1 of the [AIMIP Phase 1 evaluation paper](
 Notes on the table:
 
 - **DLESyM and cBottle-1.3 are on HEALPix grids** rather than latitude/longitude. The resolution is comparable to the 1° submissions, but the data must be remapped before gridpoint comparison with them. In the files, DLESyM carries `face`, `height` and `width` dimensions and cBottle-1.3 a single `i` dimension of 49152 cells.
-- **DLESyM pressure-level output**, as submitted, is `ta` at 850 hPa and `zg` at 250, 500 and 1000 hPa.
 - **MD-1.5 v0.9 uses `aimip-2k` and `aimip-4k`** as experiment IDs, without the `p` the other submissions use. Code that globs across submissions has to allow for both spellings.
-- **NeuralGCM-HRD** is the same model as NeuralGCM downscaled to a 1° grid. Its pressure-level wind and precipitation fields are less reliable; use NeuralGCM for comparisons involving those.
-- **DLESyM** was trained on 1983–2016 and so saw some of the AIMIP holdout period during training. Only a small subset of variables is available.
+- **NeuralGCM-HRD** is the same model as NeuralGCM with outputs downscaled to a 1° grid. The submitting group recommends NeuralGCM for comparisons involving pressure-level wind and precipitation.
+- **DLESyM** was trained on 1983–2016 and so saw some of the AIMIP holdout period during training. Only a small subset of variables is available; pressure-level output, as submitted, is `ta` at 850 hPa and `zg` at 250, 500 and 1000 hPa.
 - Per-submission documentation, where the group provided it, is published alongside the data (for example `Ai2/DATASET_CARD.md`, `Ai2/LICENSE-DATASET`, `NVIDIA/README.md`, `NVIDIA/data-card.md`).
 
 ### Reference data
@@ -73,7 +72,7 @@ AIMIP Phase 1 compares AI weather/climate models through standardized multidecad
 
 ### Forcing
 
-Models are forced with prescribed monthly sea surface temperature and sea-ice concentration derived from ERA5, spatially interpolated by each group to its own native grid. AIMIP supplies a common [1979–2024 monthly AMIP-like SST and sea-ice forcing dataset](https://doi.org/10.5281/zenodo.16782372) built from daily 0.25° ERA5 output; it extends into January 2025 so that linear interpolation through December 2024 is well defined.
+Models are forced with prescribed monthly sea surface temperature and sea-ice concentration derived from ERA5, spatially interpolated by each group to its own native grid. AIMIP supplies a common [1979–2024 monthly AMIP-like SST and sea-ice forcing dataset](https://doi.org/10.5281/zenodo.16782372) built from daily 0.25° ERA5 output.
 
 | Experiment ID | Forcing |
 |---|---|
@@ -147,9 +146,9 @@ ds = xr.open_dataset(
 ta = ds["ta"]  # (time, plev, lat, lon); plev in Pa
 ```
 
-## Known gaps
+## Known minor gaps
 
-These are minor relative to the overall evaluation requirements, but worth knowing before computing ensemble statistics.
+These do not affect the overall characteristics of the dataset, but are worth knowing before computing ensemble statistics.
 
 - **NeuralGCM-HRD**, daily `v20260306` (`hus`, `ta`, `ua`, `va`): some realization/period files were removed after a corrupted upload and were not replaced. Seven of the 1978–79 files are absent, so those variables have three or four members rather than five for that period.
 - **ArchesWeather-V2**, `aimip-p4k`: four realizations; `r3i1p1f1` is absent.
@@ -160,8 +159,6 @@ The AIMIP evaluation code fills missing realizations with NaN and continues, so 
 ## Provenance
 
 Snapshot of the AIMIP archive hosted by DKRZ at `s3://ai-mip`, taken 2026-03-31, plus the DLESyM `v20260406` resubmission from April 2026 and the license and documentation files. It is published here as a citable, immutable revision of the Phase 1 submissions for the evaluation paper.
-
-The MPI-ESM1-2-LR CMIP6 output that accompanies the archive as a formatting template is not included here, and neither is the native-resolution ERA5 collection.
 
 ## License
 
