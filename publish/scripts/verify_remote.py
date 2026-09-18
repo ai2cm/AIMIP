@@ -21,10 +21,12 @@ from huggingface_hub.hf_api import RepoFile
 from huggingface_hub.utils.sha import git_hash
 
 from config import load
-from manifest import MANIFEST_NAME, read_manifest, sha256_of
+from manifest import MANIFEST_NAME, manifest_path, read_manifest
 
-# Created and maintained by the Hub itself, never present in the staging tree.
-HUB_MANAGED = {".gitattributes"}
+# Remote paths that are never in the staging tree: .gitattributes is created by the Hub,
+# and MANIFEST.sha256 was uploaded by revisions published before the manifest moved out of
+# the staging tree (it now lives in git only).
+IGNORED_REMOTE = {".gitattributes", MANIFEST_NAME}
 
 
 def main() -> None:
@@ -36,11 +38,10 @@ def main() -> None:
     staging = cfg["staging_dir"]
     repo_id, repo_type = cfg["repo_id"], cfg["repo_type"]
 
-    manifest_path = os.path.join(staging, MANIFEST_NAME)
-    if not os.path.exists(manifest_path):
-        sys.exit(f"{manifest_path} not found: run `make manifest`, or use `make verify-full`.")
-    local = read_manifest(manifest_path)
-    local[MANIFEST_NAME] = sha256_of(manifest_path)  # the manifest is uploaded too
+    mpath = manifest_path(cfg)
+    if not os.path.exists(mpath):
+        sys.exit(f"{mpath} not found: run `make manifest`, or use `make verify-full`.")
+    local = read_manifest(mpath)
 
     api = HfApi()
     remote: dict[str, RepoFile] = {
@@ -50,9 +51,9 @@ def main() -> None:
     }
 
     missing = sorted(set(local) - set(remote))
-    extra = sorted(set(remote) - set(local) - HUB_MANAGED)
+    extra = sorted(set(remote) - set(local) - IGNORED_REMOTE)
     mismatched: list[str] = []
-    for rel in sorted((set(local) & set(remote)) - HUB_MANAGED):
+    for rel in sorted((set(local) & set(remote)) - IGNORED_REMOTE):
         entry = remote[rel]
         path = os.path.join(staging, rel)
         local_size = os.path.getsize(path)
@@ -70,9 +71,9 @@ def main() -> None:
                 if git_hash(f.read()) != str(entry.blob_id).lower():
                     mismatched.append(f"{rel}: git blob sha1 differs")
 
-    hub_files = sorted(set(remote) & HUB_MANAGED)
+    hub_files = sorted(set(remote) & IGNORED_REMOTE)
     print(f"manifest: {len(local)} files; remote revision '{args.revision}': {len(remote)} files"
-          + (f" (ignoring Hub-managed: {', '.join(hub_files)})" if hub_files else ""))
+          + (f" (ignoring: {', '.join(hub_files)})" if hub_files else ""))
     print(f"missing from repo: {len(missing)}; extra in repo: {len(extra)}; mismatched: {len(mismatched)}")
     for label, items in (("MISSING", missing), ("EXTRA", extra), ("MISMATCH", mismatched)):
         for x in items[:20]:

@@ -57,7 +57,7 @@ make fetch-source   # optional: materialize source_dir from DKRZ
 make stage-dry      # print the plan: files and GB per submission
 make stage          # hard-link source files + copy assets into staging_dir
 make check          # scope rules and expected totals (seconds); must print CHECK OK
-make manifest       # sha256 of every staged file, 8 workers (~25 min); needed by `make verify`
+make manifest       # sha256 of every staged file, 8 workers (~25 min) -> publish/MANIFEST.sha256
 make create-repo    # private dataset repo
 make probe          # 4.5 GB timing upload (ERA5/day_1deg); note the MB/s before continuing
 make upload         # full upload; resumable, rerun the same target after an interruption
@@ -67,7 +67,7 @@ make tag TAG=phase1-YYYY-MM
 ```
 
 Then generate the DOI in the dataset's **Settings → DOI** page (UI only), and commit
-`staging_dir/MANIFEST.sha256` here as the record of what that revision contains.
+`MANIFEST.sha256` as the record of what that revision contains.
 
 Run `make manifest` and `make upload` under `nohup` or `tmux`. `make manifest` does not block
 anything else: it only reads the staging tree, so it can run before or during the upload, though
@@ -75,11 +75,21 @@ running it during the upload makes both contend for disk.
 
 ### Why the manifest
 
-The Hub reports a sha256 for every Xet-tracked file, so `make verify` compares the manifest with
-that metadata and finishes in seconds. Without a manifest, `make verify-full` does the same
-end-to-end check with the CLI's built-in `hf cache verify`, but that re-reads every local file and
-hashes single-threaded at ~180 MB/s: roughly **3 hours** for this tree, against ~25 minutes for a
-parallel `make manifest`. Hashing up front is the cheaper order.
+It buys two things over `hf cache verify`; neither is about catching errors the CLI would miss.
+
+- **Speed.** `hf cache verify` hashes local files single-threaded at ~180 MB/s, about 3 hours here.
+  `make manifest` uses 8 workers (~25 min) and `make verify` then compares against the sha256 the
+  Hub reports per file, in seconds.
+- **An attestation independent of the Hub**, committed here. For a DOI'd dataset that is the reason
+  to keep it.
+
+The CLI's check is the stronger one: it reads the bytes on disk now, while `make verify` compares
+hashes taken earlier and cannot see local corruption since. Use `verify` routinely, `verify-full`
+when the local tree itself is in doubt.
+
+The manifest is **not** uploaded: one published inside the dataset describes the revision it sits
+in, so any later edit strands it. That is what happened to `phase1-2026-09`, whose embedded copy
+predates a dataset card edit. `make verify` ignores it.
 
 ## Small edits after publishing
 
@@ -92,8 +102,8 @@ make upload-assets MSG="Refresh card and licenses"     # everything under assets
 ```
 
 Each call is one commit on the dataset's `main` branch, so do this before generating a DOI for a
-revision that should include the change. `make verify` reports a mismatch for the edited file
-until the staging tree is refreshed with `make stage` and `make manifest`.
+revision that should include the change. `make verify` reports a mismatch for the edited file until
+the staging tree and manifest are refreshed with `make stage` then `make manifest`.
 
 ## Changing the scope
 
