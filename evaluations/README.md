@@ -4,7 +4,7 @@ Jupyter notebooks for evaluating AIMIP model submissions against ERA5 reanalysis
 
 ## Data
 
-Notebooks require local copies of AIMIP model submissions and ERA5 reference data downloaded from DKRZ S3 (`s3://ai-mip/` at `https://s3.eu-dkrz-1.dkrz.cloud`).
+Notebooks require local copies of AIMIP model submissions and ERA5 reference data. These can be downloaded from either of two sources, described under [Downloading data](#downloading-data) below: the DKRZ S3 store, which holds the complete archive, or the Hugging Face dataset, a citable snapshot of the subset these notebooks read.
 
 By default, data is expected at `local_data/` at the repo root. To use a different path, set the `AIMIP_DATA_ROOT` environment variable before launching Jupyter:
 
@@ -21,11 +21,20 @@ export AIMIP_CACHE_DIR=/path/to/cached      # default: ./cached
 
 ### Downloading data
 
+The same files are available from two places. Both produce the `local_data/` layout the notebooks expect.
+
+| Source | Contents | Use it for |
+|---|---|---|
+| DKRZ S3, `s3://ai-mip/` | the live archive: every submission, the MPI-ESM1-2-LR formatting template, native-resolution ERA5 and GPCP-SG | the authoritative, current copy |
+| Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) | a fixed snapshot of exactly what the E1–E5 notebooks read, about 1.8 TB | reproducing the published evaluation; a single resumable command |
+
+#### From DKRZ S3
+
 ```python
 import s3fs
 
 fs = s3fs.S3FileSystem(
-    client_kwargs={'endpoint_url': 'https://s3.eu-dkrz-1.dkrz.cloud'},
+    client_kwargs={'endpoint_url': 'https://s3.dkrz.cloud'},
     anon=True,
 )
 
@@ -41,12 +50,43 @@ Alternatively, using the AWS CLI:
 ```bash
 # Download a full model submission (replace <OrgName> and <ModelName> as needed)
 aws s3 sync s3://ai-mip/<OrgName>/<ModelName>/ ./local_data/<OrgName>/<ModelName>/ \
-    --endpoint-url https://s3.eu-dkrz-1.dkrz.cloud --no-sign-request
+    --endpoint-url https://s3.dkrz.cloud --no-sign-request
 
 # Download ERA5 reference data
 aws s3 sync s3://ai-mip/ERA5/ ./local_data/ERA5/ \
-    --endpoint-url https://s3.eu-dkrz-1.dkrz.cloud --no-sign-request
+    --endpoint-url https://s3.dkrz.cloud --no-sign-request
 ```
+
+#### From Hugging Face
+
+```bash
+pip install "huggingface_hub[hf_xet]"
+
+# Everything the notebooks read (~1.8 TB), straight into local_data/
+hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data
+
+# Or one submission plus the ERA5 reference data
+hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data \
+    --include "DLESyM/*" "ERA5/*"
+
+# Or the exact revision evaluated in the paper
+hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data \
+    --revision phase1-2026-09
+```
+
+Downloads resume if interrupted: rerun the same command and completed files are skipped.
+
+This snapshot is citable as **DOI [10.57967/hf/10490](https://doi.org/10.57967/hf/10490)**. It is the submission data the evaluations use, pinned to the revision behind the published results, plus the 1° ERA5 reference data. It deliberately omits the MPI-ESM1-2-LR formatting template, the native-resolution `ERA5/mon` collection and `GPCP-SG`, none of which the E1–E5 notebooks read; take those from DKRZ if you need them. Its dataset card documents the per-submission grids, variables and known gaps.
+
+### Starting from DKRZ
+
+The Hugging Face snapshot already is what the notebooks read. If you sync from DKRZ instead, five things need attention. Compared file-by-file on 2026-09-18.
+
+- **Some files the evaluation config expects under `v20260304` are published on DKRZ only under `v20260305`.** This affects 78 NeuralGCM and NeuralGCM-HRD files, mostly monthly `ps`, `tas`, `tdas` and `ts` for the `+2K` and `+4K` experiments. Synced as-is they simply will not be found, and the loader substitutes NaN.
+- **Three monthly NeuralGCM-HRD files are truncated under `v20260304`**: `aimip` r1 `ua`, `aimip` r2 `tas`, and `aimip-p4k` r3 `pr`. DKRZ publishes the intact copies under `v20260312`; one was checked byte-for-byte against the snapshot and matches. The same pattern affects one daily file under `v20260309`.
+- **Thirty NeuralGCM-HRD daily `v20260306` files are truncated and will not open.** These are the originals behind the known gap described in the dataset card, not replacements for it. Every one has a size that is an exact multiple of 1 MiB, which no intact file in the archive does.
+- **ERA5 is incomplete on DKRZ**: the `ERA5/day_1deg` NetCDF that E4 reads is absent, as are the 1° monthly `Amon_pr` and `Amon_tdas`. Take ERA5 from the snapshot or from any other ERA5 source.
+- **Several trees can be skipped.** Nothing in E1–E5 reads `MPI-M/`, `ERA5/mon/`, `GPCP-SG/` or `catalog/`. `ArchesWeather/ArchesWeatherGen-V2/aimip-era5/` duplicates files already present at their correct paths.
 
 ### Expected directory structure
 
@@ -101,7 +141,7 @@ The evaluation notebooks above read data from **local files** that you download 
 
 ### 1. Local download (default for these E1–E5 notebooks)
 
-Pre-download a model submission with `s3fs.get(...)` or `aws s3 sync ...`, then point the notebooks at it via `AIMIP_DATA_ROOT`. Best when:
+Pre-download a model submission with `hf download ...`, `s3fs.get(...)` or `aws s3 sync ...`, then point the notebooks at it via `AIMIP_DATA_ROOT`. Best when:
 
 - you re-read the same files many times (the evaluation notebooks do)
 - you want offline-capable, reproducible runs (e.g. CI)
@@ -122,7 +162,7 @@ ds = xr.open_dataset(
     engine="h5netcdf",
     backend_kwargs={"storage_options": {
         "anon": True,
-        "client_kwargs": {"endpoint_url": "https://s3.eu-dkrz-1.dkrz.cloud"},
+        "client_kwargs": {"endpoint_url": "https://s3.dkrz.cloud"},
     }},
 )
 ```
@@ -136,7 +176,7 @@ A virtual catalog published at `s3://ai-mip/catalog/` exposes every CMIP6 group 
 ```python
 import intake
 
-S3_OPTS = {"anon": True, "client_kwargs": {"endpoint_url": "https://s3.eu-dkrz-1.dkrz.cloud"}}
+S3_OPTS = {"anon": True, "client_kwargs": {"endpoint_url": "https://s3.dkrz.cloud"}}
 cat = intake.open_catalog("s3://ai-mip/catalog/CMIP6/catalog.yaml", storage_options=S3_OPTS)
 
 # kerchunk JSON leaf (stock zarr; works for 149 of 239 stores)
@@ -153,13 +193,14 @@ Best when: you want to discover what's available, slice by facets (`institution_
 | Want to … | Best fit |
 |---|---|
 | Run E1–E5 here, or any workflow that re-reads files | **Local download** (default) |
+| Reproduce the published evaluation from a citable, fixed snapshot | Local download from Hugging Face |
 | Open one specific file by an exact path | Direct S3 |
 | Browse the archive hierarchically; multi-file groups as one Dataset | Catalog (kerchunk JSON) |
 | Read an Ai2 day, DLESyM, or Google day store | Catalog (icechunk — only published path for these) |
 
 ### Install
 
-For (1) and (2): `pip install xarray s3fs h5netcdf` (already in `environment.yml`).
+For (1) and (2): `pip install xarray s3fs h5netcdf` (already in `environment.yml`). Downloading from Hugging Face additionally needs `huggingface_hub[hf_xet]`, also in `environment.yml`.
 
 For (3) the catalog:
 
