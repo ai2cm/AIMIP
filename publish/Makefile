@@ -1,4 +1,4 @@
-.PHONY: check-config env test-env fetch-source stage stage-dry manifest check create-repo probe upload verify verify-full publish tag clean
+.PHONY: check-config env test-env fetch-source stage stage-dry manifest check create-repo probe upload upload-assets verify verify-full publish tag clean
 
 # Shared with evaluations/ (see evaluations/environment.yml).
 ENV_NAME  = aimip-evaluations
@@ -32,7 +32,8 @@ check-config:
 	  echo "conda not found at '$(CONDA)'. Override with: make CONDA=/path/to/conda"; exit 1; }
 
 # Overridable on the command line, e.g. `make upload MSG="..."`, `make tag TAG=phase1-2026-09`.
-MSG ?= AIMIP Phase 1 submissions snapshot
+DEFAULT_MSG = AIMIP Phase 1 submissions snapshot
+MSG ?= $(DEFAULT_MSG)
 TAG ?= phase1-$(shell date +%Y-%m)
 
 # Create or update the shared conda env (adds huggingface_hub + pyyaml to aimip-evaluations).
@@ -73,6 +74,24 @@ probe: check-config
 # Full upload. Resumable: rerun the same target after an interruption and already-committed files are skipped.
 upload: check-config
 	HF_XET_HIGH_PERFORMANCE=1 $(CONDA_RUN) hf upload $(REPO_ID) $(STAGING) . --type $(REPO_TYPE) --commit-message "$(MSG)"
+
+# Targeted upload for small edits (dataset card, licenses) that do not warrant restaging or
+# re-syncing the 1.8 TB tree. Files go from assets/ to the same relative path in the repo,
+# committed straight to the dataset's main branch.
+#   make upload-assets                  # everything under assets/
+#   make upload-assets FILE=README.md   # one file
+# Restage before the next full `make upload` so the staging tree and MANIFEST.sha256 catch up.
+ifdef FILE
+ASSET_ARGS = assets/$(FILE) $(FILE)
+ASSET_MSG  = Update $(FILE)
+else
+ASSET_ARGS = assets . --exclude "*.ipynb_checkpoints*"
+ASSET_MSG  = Update dataset card and license files
+endif
+
+upload-assets: check-config
+	@test -z "$(FILE)" -o -f "assets/$(FILE)" || { echo "no such file: assets/$(FILE)"; exit 1; }
+	$(CONDA_RUN) hf upload $(REPO_ID) $(ASSET_ARGS) --type $(REPO_TYPE) --commit-message "$(if $(filter-out $(DEFAULT_MSG),$(MSG)),$(MSG),$(ASSET_MSG))"
 
 # Compare the uploaded revision with MANIFEST.sha256 against the sha256 the Hub reports per
 # file: seconds, no local re-reading. Requires `make manifest`.

@@ -81,6 +81,20 @@ end-to-end check with the CLI's built-in `hf cache verify`, but that re-reads ev
 hashes single-threaded at ~180 MB/s: roughly **3 hours** for this tree, against ~25 minutes for a
 parallel `make manifest`. Hashing up front is the cheaper order.
 
+## Small edits after publishing
+
+Editing the dataset card or a license notice does not need the staging tree. Change the file
+under [`assets/`](assets/), commit it here, and push just that file:
+
+```bash
+make upload-assets FILE=README.md                      # one file
+make upload-assets MSG="Refresh card and licenses"     # everything under assets/
+```
+
+Each call is one commit on the dataset's `main` branch, so do this before generating a DOI for a
+revision that should include the change. `make verify` reports a mismatch for the edited file
+until the staging tree is refreshed with `make stage` and `make manifest`.
+
 ## Changing the scope
 
 Edit `dataset.yaml` (`include`, `exclude_globs`, `expected`), then rerun from `make stage`
