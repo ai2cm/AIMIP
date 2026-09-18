@@ -3,10 +3,11 @@
     python manifest.py dataset.yaml --check  # scope rules + expected totals (fast); exit 1 on failure
     python manifest.py dataset.yaml          # sha256 every staged file -> <staging>/MANIFEST.sha256
 
-Hashing is optional: uploads are verified against the Hub's own checksums with
-``hf cache verify`` (``make verify``). The manifest exists to be committed alongside a
-published revision as the record of what it contains, and to check a copy of the tree
-without contacting the Hub. Its format is the one ``sha256sum -c`` understands.
+The manifest is written next to this config, not into the staging tree, so it is never
+uploaded: a manifest published inside the dataset would have to describe the revision it
+sits in, and any later edit to another file would strand it. It lives in git as the record
+of what a published revision contains, and lets a copy of the tree be checked without
+contacting the Hub. Its format is the one ``sha256sum -c`` understands.
 """
 import argparse
 import fnmatch
@@ -29,13 +30,16 @@ def sha256_of(path: str) -> str:
     return h.hexdigest()
 
 
+def manifest_path(cfg: dict) -> str:
+    """Beside dataset.yaml, i.e. inside the git repo rather than the staging tree."""
+    return os.path.join(cfg["_config_dir"], MANIFEST_NAME)
+
+
 def staged_files(staging: str) -> list[str]:
     out = []
     for dirpath, _, files in os.walk(staging):
         for name in files:
-            rel = os.path.relpath(os.path.join(dirpath, name), staging)
-            if rel != MANIFEST_NAME:
-                out.append(rel)
+            out.append(os.path.relpath(os.path.join(dirpath, name), staging))
     return sorted(out)
 
 
@@ -54,7 +58,7 @@ def write_manifest(cfg: dict, workers: int) -> None:
     print(f"hashing {len(rels)} files under {staging} with {workers} workers ...")
     with ThreadPoolExecutor(workers) as ex:
         digests = list(ex.map(lambda r: sha256_of(os.path.join(staging, r)), rels))
-    out = os.path.join(staging, MANIFEST_NAME)
+    out = manifest_path(cfg)
     with open(out, "w") as f:
         for rel, digest in zip(rels, digests):
             f.write(f"{digest}  {rel}\n")
@@ -87,9 +91,9 @@ def check(cfg: dict) -> int:
         problems.append(f"total bytes {total} outside [{exp['total_bytes_min']}, {exp['total_bytes_max']}]")
 
     # The manifest is optional; cross-check it only if one has been written.
-    manifest_path = os.path.join(staging, MANIFEST_NAME)
-    if os.path.exists(manifest_path):
-        listed = set(read_manifest(manifest_path))
+    mpath = manifest_path(cfg)
+    if os.path.exists(mpath):
+        listed = set(read_manifest(mpath))
         missing = sorted(set(rels) - listed)
         extra = sorted(listed - set(rels))
         if missing:

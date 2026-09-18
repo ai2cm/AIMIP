@@ -17,8 +17,6 @@ from collections import defaultdict
 
 from config import load
 
-MANIFEST_NAME = "MANIFEST.sha256"
-
 
 def excluded(rel: str, cfg: dict) -> bool:
     """True if a staging-relative path is excluded by name or by glob.
@@ -132,7 +130,7 @@ def main() -> None:
         for dirpath, dirs, files in os.walk(staging, topdown=False):
             for name in files:
                 rel = os.path.relpath(os.path.join(dirpath, name), staging)
-                if rel not in planned and rel != MANIFEST_NAME:
+                if rel not in planned:
                     os.remove(os.path.join(dirpath, name))
                     removed += 1
             for d in dirs:
