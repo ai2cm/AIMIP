@@ -42,7 +42,7 @@ V6: Mar. 26, 2026:
 V7: May 13, 2026: 
 
 * The AIMIP Phase 1 manuscript is now [available on arXix](https://arxiv.org/abs/2605.06944).
-* Information on how to access the Phase 1 dataset is available [here](evaluations/README.md#data).
+* Information on how to access the Phase 1 dataset is available [here](evaluations/README.md#data). The evaluated subset is published as a citable snapshot on Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) (DOI [10.57967/hf/10490](https://doi.org/10.57967/hf/10490)).
 
 **Goals of AIMIP Phase 1 (AIMIP-1)**
 
@@ -295,7 +295,7 @@ The PMP Team (Lee et al. 2024, [https://github.com/PCMDI/pcmdi\_metrics](https:/
 
 Jupyter notebooks implementing the E1–E5 metrics against ERA5 reanalysis are available in the [evaluations/](evaluations/) directory of this repository. See [evaluations/README.md](evaluations/README.md) for setup and usage instructions.
 
-See [Data](evaluations/README.md#data) for more information on how to acess the AIMIP Phase 1 dataset.
+See [Data](evaluations/README.md#data) for more information on how to access the AIMIP Phase 1 dataset, from either the DKRZ store or the Hugging Face snapshot.
 
 **Proposed timeline**
 

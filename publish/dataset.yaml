@@ -18,7 +18,7 @@ staging_dir: ~/hf-staging/aimip-phase1-submissions
 # DKRZ archive used by `make fetch-source` to materialize `source_dir` (only works
 # while the store is reachable).
 s3_source: s3://ai-mip
-s3_endpoint: https://s3.eu-dkrz-1.dkrz.cloud
+s3_endpoint: https://s3.dkrz.cloud
 
 # Directories (copied whole) or single files, relative to `source_dir`.
 # Evaluation-only scope: everything the E1-E5 notebooks on `main` read.
