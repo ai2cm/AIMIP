@@ -6,7 +6,9 @@ V1: Dec. 15, 2025: Initial submisssion table (Brian Henn)
 
 ## Data Access
 
-Submission data is stored on DKRZ S3 (`s3://ai-mip/` at `https://s3.eu-dkrz-1.dkrz.cloud`) and can be accessed anonymously.
+Submission data is stored on DKRZ S3 (`s3://ai-mip/` at `https://s3.dkrz.cloud`) and can be accessed anonymously. The example paths in the table below refer to that store.
+
+The subset used in the Phase 1 evaluations is also published as a citable snapshot on Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) (DOI [10.57967/hf/10490](https://doi.org/10.57967/hf/10490)). See [evaluations/README.md § Downloading data](evaluations/README.md#downloading-data) for both routes.
 
 Using Python (`s3fs`):
 
@@ -14,7 +16,7 @@ Using Python (`s3fs`):
 import s3fs
 
 fs = s3fs.S3FileSystem(
-    client_kwargs={'endpoint_url': 'https://s3.eu-dkrz-1.dkrz.cloud'},
+    client_kwargs={'endpoint_url': 'https://s3.dkrz.cloud'},
     anon=True,
 )
 
@@ -27,7 +29,7 @@ Using the AWS CLI:
 ```bash
 # Download a full model submission (replace <OrgName> and <ModelName> as needed)
 aws s3 sync s3://ai-mip/<OrgName>/<ModelName>/ ./local_data/<OrgName>/<ModelName>/ \
-    --endpoint-url https://s3.eu-dkrz-1.dkrz.cloud --no-sign-request
+    --endpoint-url https://s3.dkrz.cloud --no-sign-request
 ```
 
 ## Submissions

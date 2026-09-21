@@ -20,4 +20,4 @@ dependencies:
   - pyyaml
   - pip
   - pip:
-      - huggingface_hub[hf_xet]  # publish/: Hugging Face dataset publishing workflow
+      - huggingface_hub[hf_xet]  # download the HF dataset snapshot; also used by publish/
