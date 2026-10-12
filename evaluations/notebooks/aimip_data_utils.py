@@ -761,6 +761,12 @@ def add_latlon_to_dlesym(
 
 def regrid_dataset(src: xr.Dataset, target_grid: xr.Dataset, sample_dims: list[str] | None=None, **regridder_kwargs) -> xr.Dataset:
     """Regrid dataset to target grid. Sample dimensions are those not part of the grid."""
+    # some grids with points at the poles (ArchesWeather) have bounds extending to +-90.5, which
+    # corrupts conservative regridding onto the polar rows of a global target grid
+    src, target_grid = [
+        ds.assign(lat_bnds=ds['lat_bnds'].clip(-90., 90.)) if 'lat_bnds' in ds else ds
+        for ds in (src, target_grid)
+    ]
     if sample_dims is not None:
         indexer = {sample_dim: 0 for sample_dim in sample_dims}
         src_no_sample_dims = src.isel(**indexer).squeeze()
