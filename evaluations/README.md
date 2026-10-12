@@ -109,6 +109,10 @@ The 1° ERA5 reference data comes from three sources:
 - **`ERA5/mon_1deg/` `pr`:** conservatively regridded from the 0.25° ERA5 monthly precipitation in `ERA5/mon` by [`notebooks/data_prep/ERA5-1deg-precipitation.ipynb`](notebooks/data_prep/ERA5-1deg-precipitation.ipynb).
 - **`ERA5/day_1deg/`:** daily means for October 1978 – December 1979 on a 180 × 360 Gaussian grid, built by [`notebooks/data_prep/ERA5-daily-1deg.ipynb`](notebooks/data_prep/ERA5-daily-1deg.ipynb) from the 6-hourly ERA5 data Ai2 prepared for training ACE. That source isn't public, so use the copy in the Hugging Face snapshot.
 
+### GFDL-CM4 comparison data
+
+All five notebooks compare against GFDL-CM4's CMIP6 `amip` run (`r1i1p1f1`, `gr1` grid, version `v20180701`), and E5 also uses its CFMIP `amip-p4K` run. Neither is in `local_data/`. When regenerating the cache, the notebooks read them directly from Google's public CMIP6 bucket (`gs://cmip6/CMIP6/`): monthly `amip` data in all five, daily `amip` data in E4, and monthly `amip-p4K` data in E5. Access is anonymous, so no Google credentials are needed, only network access. Restoring from the bundled cache doesn't read it.
+
 ## Setup
 
 ```bash

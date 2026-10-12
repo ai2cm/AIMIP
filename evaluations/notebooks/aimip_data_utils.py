@@ -39,6 +39,8 @@ MD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{tab
 ERA5_FILE_TEMLATE = 'mon_1deg/native6_ERA5_an_v1_Amon_{varname}_1978-2024.nc'
 GFDL_CM4_AMIP_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-CM4/amip/r1i1p1f1/Amon/{varname}/gr1/v20180701'
 GFDL_CM4_AMIP_DAILY_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-CM4/amip/r1i1p1f1/day/{varname}/gr1/v20180701'
+# gs://cmip6 is public: read it anonymously so stale or missing Google credentials can't break the load
+CMIP6_GCS_STORAGE_OPTIONS = {'token': 'anon'}
 
 FILE_TEMPLATES = {
     'ACE2.1-ERA5-aimip': ACE_FILE_TEMPLATE,
@@ -869,7 +871,7 @@ def open_variable_from_cmip6_gcs_zarr(
     evaluation_variable: EvaluationVariable,
 ) -> tuple[xr.Dataset, bool]:
     try:
-        variable_dataset = xr.open_zarr(path)
+        variable_dataset = xr.open_zarr(path, storage_options=CMIP6_GCS_STORAGE_OPTIONS)
     except FileNotFoundError:
         print(f"Not found: {path}")
         missing = True
@@ -893,7 +895,7 @@ def load_gfdl_am4_from_cmip6_gcs(
     root_dir = zarr_template.format(
         varname=eval_variables[0].short_name, version_tag=DEFAULT_GFDL_AM4_CMIP6_VERSION_TAG
     ).split(eval_variables[0].short_name)[0]
-    fs, *_ = fsspec.get_fs_token_paths(root_dir)
+    fs, *_ = fsspec.get_fs_token_paths(root_dir, storage_options=CMIP6_GCS_STORAGE_OPTIONS)
     all_variables = [os.path.basename(path) for path in fs.ls(root_dir)]
     eval_variables_shortname = [eval_variable.short_name for eval_variable in eval_variables]
     available_variables = list(set(all_variables).intersection(set(eval_variables_shortname)))
