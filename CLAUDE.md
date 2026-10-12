@@ -39,7 +39,7 @@ Rules established while building E1 manuscript figures. Apply to all notebooks (
 - When selecting a single pressure level with `.sel(plev=plev)`, always chain `.drop_vars('plev')` immediately after. The scalar `plev` coordinate otherwise gets included in the DataFrame MultiIndex, causing the pressure value (e.g. 85000) to be plotted instead of the actual data.
 
 ### Maps
-- Do not show coastlines (`ax.coastlines()`) in manuscript map figures.
+- Draw coastlines thin: `ax.coastlines(color='gray', linewidth=0.25)`. They are drawn on top of the data, and at manuscript map sizes a 1° grid cell is about one pixel, so thicker lines hide the coastal values. Don't go below 0.25 pt, which may not survive print.
 - For **vertical** colorbars (the default for multi-row map figures like E1): use `fraction=0.015`, `pad=0.06`, `aspect=25`.
 - For **horizontal** colorbars (used when a single-row ERA5 reference colorbar would cause rotated label overflow — e.g. E2 trend bias maps): use `fraction=0.04`, `pad=0.06`, `aspect=30`. The `pad=0.06` rule applies in both cases. Do not try to switch a figure's colorbar orientation to achieve CLAUDE.md compliance — only fix individual parameter values.
 - When a figure shows both a reference field (ERA5) and model error/bias for the same variable, share the colorbar limits **only if the ERA5 values and model errors are similar in magnitude** (e.g. E2 trend bias, E3 ENSO coefficients). Do not share when ERA5 absolute values dominate (e.g. E1, E4) — that would wash out the error signal. When sharing: `shared = max(vlims_ref[var], vlims_error[var])` per variable; do **not** share across different variables.
