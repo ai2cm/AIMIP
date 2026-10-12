@@ -119,7 +119,7 @@ Google/NeuralGCM/aimip-p4k/r2i1p1f1/day/tas/gn/v20260305/tas_day_NeuralGCM_aimip
 ArchesWeather/ArchesWeather-V2/aimip/r1i1p1f1/Amon/pr/gn/pr_Amon_ArchesWeather_aimip_r1i1p1f1_gn_197810-202501.nc
 ```
 
-Variable coverage differs by submission. All eight provide `ta`, `zg`, and `tas`; most provide `hus`, `ua`, `va`, `uas`, `vas`, `pr`, `ps`, and `ts`. DLESyM provides only `ta`, `zg`, `tas`, and `pr`. cBottle-1.3 additionally provides radiative and column-integrated fields (`rlut`, `rsds`, `rsut`, `prw`, `clivi`). ArchesWeather submissions provide `tos` and `psl`; NeuralGCM provides `tdas`.
+Variable coverage differs by submission. All eight provide `ta`, `zg`, and `tas`; most provide `hus`, `ua`, `va`, `uas`, `vas`, `pr`, `ps`, and `ts`. DLESyM provides only `ta`, `zg`, `tas`, and `pr`. cBottle-1.3 additionally provides radiative and column-integrated fields (`rlut`, `rsds`, `rsut`, `prw`, `clivi`). ArchesWeather submissions provide `tos` and `psl`; NeuralGCM provides `tdas` (2 m dewpoint temperature) instead of `huss`. The AIMIP protocol asked for `tdas` by mistake; the CMIP6 name is `tdps`.
 
 ## Usage
 
