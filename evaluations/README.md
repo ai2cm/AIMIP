@@ -85,7 +85,7 @@ The Hugging Face snapshot already is what the notebooks read. If you sync from D
 - **Some files the evaluation config expects under `v20260304` are published on DKRZ only under `v20260305`.** This affects 78 NeuralGCM and NeuralGCM-HRD files, mostly monthly `ps`, `tas`, `tdas` and `ts` for the `+2K` and `+4K` experiments. Synced as-is they simply will not be found, and the loader substitutes NaN.
 - **Three monthly NeuralGCM-HRD files are truncated under `v20260304`**: `aimip` r1 `ua`, `aimip` r2 `tas`, and `aimip-p4k` r3 `pr`. DKRZ publishes the intact copies under `v20260312`; one was checked byte-for-byte against the snapshot and matches. The same pattern affects one daily file under `v20260309`.
 - **Thirty NeuralGCM-HRD daily `v20260306` files are truncated and will not open.** These are the originals behind the known gap described in the dataset card, not replacements for it. Every one has a size that is an exact multiple of 1 MiB, which no intact file in the archive does.
-- **ERA5 is incomplete on DKRZ**: the `ERA5/day_1deg` NetCDF that E4 reads is absent, as are the 1° monthly `Amon_pr` and `Amon_tdas`. Take ERA5 from the snapshot or from any other ERA5 source.
+- **ERA5 is incomplete on DKRZ**: the `ERA5/day_1deg` NetCDF that E4 reads is absent, as is the 1° monthly `Amon_pr`. The 1° monthly dewpoint is there as `Emon_tdps` rather than `Amon_tdas`. Take ERA5 from the snapshot, or rename that file and its variable to `tdas` and rebuild `pr` from `ERA5/mon` (see [ERA5 evaluation data](#era5-evaluation-data)).
 - **Several trees can be skipped.** Nothing in E1–E5 reads `MPI-M/`, `ERA5/mon/`, `GPCP-SG/` or `catalog/`. `ArchesWeather/ArchesWeatherGen-V2/aimip-era5/` duplicates files already present at their correct paths.
 
 ### Expected directory structure
@@ -103,7 +103,11 @@ local_data/
 
 ### ERA5 evaluation data
 
-ERA5 monthly and daily data for use in AIMIP evaluations has also been made available on the DKRZ store by Nikolay Koldunov and Bettina Gier.
+The 1° ERA5 reference data comes from three sources:
+
+- **`ERA5/mon_1deg/`, every variable except `pr`:** monthly means prepared for AIMIP evaluation with ESMValTool by Nikolay Koldunov and Bettina Gier. All are on the DKRZ store; `tdas` is DKRZ's `native6_ERA5_an_v1_Emon_tdps_1978-2024.nc` with the file and variable renamed from `tdps` to `tdas`.
+- **`ERA5/mon_1deg/` `pr`:** conservatively regridded from the 0.25° ERA5 monthly precipitation in `ERA5/mon` by [`notebooks/data_prep/ERA5-1deg-precipitation.ipynb`](notebooks/data_prep/ERA5-1deg-precipitation.ipynb).
+- **`ERA5/day_1deg/`:** daily means for October 1978 – December 1979 on a 180 × 360 Gaussian grid, built by [`notebooks/data_prep/ERA5-daily-1deg.ipynb`](notebooks/data_prep/ERA5-daily-1deg.ipynb) from the 6-hourly ERA5 data Ai2 prepared for training ACE. That source isn't public, so use the copy in the Hugging Face snapshot.
 
 ## Setup
 
