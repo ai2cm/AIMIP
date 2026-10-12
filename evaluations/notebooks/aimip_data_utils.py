@@ -652,7 +652,9 @@ def open_variable_from_path(
     template: xr.Dataset,
 ) -> tuple[xr.Dataset, bool]:
     try:
-        variable_dataset = xr.open_dataset(path, chunks={})
+        # keep duration-unit variables numeric: ERA5's scalar forecast_period coordinate otherwise decodes as a
+        # timedelta in files rewritten by xarray (tdas) but as a float in the others, and the merge rejects the mix
+        variable_dataset = xr.open_dataset(path, chunks={}, decode_timedelta=False)
     except FileNotFoundError:
         print(f"Not found: {path}")
         variable_dataset = xr.full_like(template, fill_value=np.nan)
