@@ -199,6 +199,7 @@ surface pressure \[ps, Pa\] and/or sea-level pressure \[psl, Pa\]
 surface temperature \[ts, K\] (skin temp. over land or sea ice, SST over ocean, whatever your model uses in grid cells with mixed surface types)  
 2 m air temperature \[tas, K\],   
 2 m dewpoint temperature \[tdas, K\] AND/OR 2 m specific humidity \[huss, kg/kg\]  
+*(Note: `tdas` was a mistake in this protocol. The CMIP6 name for 2 m dewpoint temperature is `tdps`, in the Emon and Eday tables. Submissions and the evaluation code use `tdas` as requested.)*  
 10 m eastward wind \[uas, m/s\],   
 10 m northward wind \[vas, m/s\],   
 Surface precipitation rate \[pr, kg/(m^2 s)\], includes both liquid and frozen \- this should be computed as a time-averaged rate over the month, rather than from a month of daily snapshots, to avoid adding excessive sampling noise.

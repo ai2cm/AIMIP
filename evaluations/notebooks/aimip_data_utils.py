@@ -6,6 +6,7 @@ import fsspec
 import os
 from copy import deepcopy
 import dataclasses
+import functools
 from matplotlib import pyplot as plt
 from typing import Literal
 
@@ -39,6 +40,8 @@ MD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{tab
 ERA5_FILE_TEMLATE = 'mon_1deg/native6_ERA5_an_v1_Amon_{varname}_1978-2024.nc'
 GFDL_CM4_AMIP_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-CM4/amip/r1i1p1f1/Amon/{varname}/gr1/v20180701'
 GFDL_CM4_AMIP_DAILY_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-CM4/amip/r1i1p1f1/day/{varname}/gr1/v20180701'
+# gs://cmip6 is public: read it anonymously so stale or missing Google credentials can't break the load
+CMIP6_GCS_STORAGE_OPTIONS = {'token': 'anon'}
 
 FILE_TEMPLATES = {
     'ACE2.1-ERA5-aimip': ACE_FILE_TEMPLATE,
@@ -652,7 +655,9 @@ def open_variable_from_path(
     template: xr.Dataset,
 ) -> tuple[xr.Dataset, bool]:
     try:
-        variable_dataset = xr.open_dataset(path, chunks={})
+        # keep duration-unit variables numeric: ERA5's scalar forecast_period coordinate otherwise decodes as a
+        # timedelta in files rewritten by xarray (tdas) but as a float in the others, and the merge rejects the mix
+        variable_dataset = xr.open_dataset(path, chunks={}, decode_timedelta=False)
     except FileNotFoundError:
         print(f"Not found: {path}")
         variable_dataset = xr.full_like(template, fill_value=np.nan)
@@ -676,6 +681,18 @@ def open_variable_from_path(
     # singleton height coordinate for surface variables causes xarray merge conflicts
     variable_dataset = variable_dataset.drop_vars("height", errors="ignore") 
     return variable_dataset, missing
+
+def check_time_coverage(name: str, datasets: list[xr.Dataset], time_dim_name: str='time') -> None:
+    # the outer merge pads a variable with a shorter record with NaN, which the skipna means and regressions
+    # downstream then skip silently (the ERA5 pr file once started in 1979-10), so require equal coverage
+    indexes = {var: ds.indexes[time_dim_name] for ds in datasets if time_dim_name in ds.indexes for var in ds.data_vars}
+    if not indexes:
+        return
+    union = functools.reduce(lambda a, b: a.union(b), indexes.values())
+    short = {var: union.difference(index) for var, index in indexes.items() if len(index) != len(union)}
+    if short:
+        details = '; '.join(f'{var} lacks {len(missing)} steps ({missing[0]} to {missing[-1]})' for var, missing in short.items())
+        raise ValueError(f'{name}: variables cover different time steps: {details}')
 
 def open_aimip_data(
     experiment_submissions: list[ExperimentSubmission],
@@ -704,6 +721,7 @@ def open_aimip_data(
                     template = realization_dataset
             evaluation_variable_dataset = xr.concat(realization_datasets, dim='realization', compat='no_conflicts', join='inner')
             evaluation_variable_datasets.append(evaluation_variable_dataset)
+        check_time_coverage(experiment_submission.name, evaluation_variable_datasets)
         experiment_submission_dataset = xr.merge(evaluation_variable_datasets, compat='no_conflicts', join='outer')
         experiment_submission_datasets[experiment_submission.name] =  experiment_submission_dataset
         missing_files[experiment_submission.name] = submission_missing_files
@@ -757,6 +775,12 @@ def add_latlon_to_dlesym(
 
 def regrid_dataset(src: xr.Dataset, target_grid: xr.Dataset, sample_dims: list[str] | None=None, **regridder_kwargs) -> xr.Dataset:
     """Regrid dataset to target grid. Sample dimensions are those not part of the grid."""
+    # some grids with points at the poles (ArchesWeather) have bounds extending to +-90.5, which
+    # corrupts conservative regridding onto the polar rows of a global target grid
+    src, target_grid = [
+        ds.assign(lat_bnds=ds['lat_bnds'].clip(-90., 90.)) if 'lat_bnds' in ds else ds
+        for ds in (src, target_grid)
+    ]
     if sample_dims is not None:
         indexer = {sample_dim: 0 for sample_dim in sample_dims}
         src_no_sample_dims = src.isel(**indexer).squeeze()
@@ -800,7 +824,7 @@ def compute_huss_from_tdas(tdas: xr.DataArray, ps: xr.DataArray) -> xr.DataArray
     return huss
 
 def convert_tdas_to_huss(ds: xr.Dataset) -> xr.Dataset:
-    if 'tdas' and 'ps' in ds.data_vars and 'huss' not in ds.data_vars:
+    if 'tdas' in ds.data_vars and 'ps' in ds.data_vars and 'huss' not in ds.data_vars:
         print("Converting 'tdas' to 'huss'.")
         ds['huss'] = compute_huss_from_tdas(ds['tdas'], ds['ps'])
         return ds.drop_vars(['tdas'])
@@ -837,6 +861,10 @@ def linear_fit(x, y):
     return fit[0], fit[1]
 
 def compute_decadal_trend(ds: xr.Dataset, start: str, end: str, time_dim_name: str) -> xr.Dataset:
+    if time_dim_name == 'year':
+        # annual means are indexed by integer year; slicing them with date strings like '1979-01-01'
+        # silently drops the first year, so select whole years instead
+        start, end = int(str(start)[:4]), int(str(end)[:4])
     ds_subset = ds.sel(**{time_dim_name: slice(start, end)})
     trends, _ = xr.apply_ufunc(
         linear_fit,
@@ -851,7 +879,12 @@ def compute_decadal_trend(ds: xr.Dataset, start: str, end: str, time_dim_name: s
     return transfer_attrs(ds, trends)
 
 def compute_annual_mean(ds: xr.Dataset, time_dim_name: str='time') -> xr.Dataset:
-    annual_mean_ds = ds.groupby(f"{time_dim_name}.year").mean()
+    # monthly input: average only complete years, rather than silently averaging the months a partial year has
+    months_per_year = ds[time_dim_name].groupby(f"{time_dim_name}.year").count()
+    incomplete_years = months_per_year['year'].values[months_per_year.values < 12]
+    if len(incomplete_years):
+        print(f"Dropping incomplete years: {', '.join(str(year) for year in incomplete_years)}")
+    annual_mean_ds = ds.groupby(f"{time_dim_name}.year").mean().drop_sel(year=incomplete_years)
     return transfer_attrs(ds, annual_mean_ds)
 
 def compute_global_mean(ds: xr.Dataset, lat_dim: str='lat', lon_dim: str='lon') -> xr.Dataset:
@@ -867,7 +900,7 @@ def open_variable_from_cmip6_gcs_zarr(
     evaluation_variable: EvaluationVariable,
 ) -> tuple[xr.Dataset, bool]:
     try:
-        variable_dataset = xr.open_zarr(path)
+        variable_dataset = xr.open_zarr(path, storage_options=CMIP6_GCS_STORAGE_OPTIONS)
     except FileNotFoundError:
         print(f"Not found: {path}")
         missing = True
@@ -891,7 +924,7 @@ def load_gfdl_am4_from_cmip6_gcs(
     root_dir = zarr_template.format(
         varname=eval_variables[0].short_name, version_tag=DEFAULT_GFDL_AM4_CMIP6_VERSION_TAG
     ).split(eval_variables[0].short_name)[0]
-    fs, *_ = fsspec.get_fs_token_paths(root_dir)
+    fs, *_ = fsspec.get_fs_token_paths(root_dir, storage_options=CMIP6_GCS_STORAGE_OPTIONS)
     all_variables = [os.path.basename(path) for path in fs.ls(root_dir)]
     eval_variables_shortname = [eval_variable.short_name for eval_variable in eval_variables]
     available_variables = list(set(all_variables).intersection(set(eval_variables_shortname)))

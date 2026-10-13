@@ -55,7 +55,7 @@ Notes on the table:
 
 ### Reference data
 
-`ERA5/mon_1deg/` holds monthly-mean ERA5 for 1978–2024 regridded to 1°, one file per variable (`hus`, `pr`, `ps`, `psl`, `ta`, `tas`, `tdas`, `ts`, `ua`, `uas`, `va`, `vas`, `zg`). `ERA5/day_1deg/` holds daily-mean ERA5 for October 1978 – December 1979 at 1°. These were prepared for AIMIP evaluation by Nikolay Koldunov and Bettina Gier.
+`ERA5/mon_1deg/` holds monthly-mean ERA5 for 1978–2024 on a regular 1° grid, one file per variable (`hus`, `pr`, `ps`, `psl`, `ta`, `tas`, `tdas`, `ts`, `ua`, `uas`, `va`, `vas`, `zg`). All variables except `pr` were prepared for AIMIP evaluation with ESMValTool by Nikolay Koldunov and Bettina Gier. `pr` was conservatively regridded from 0.25° ERA5 monthly precipitation by `evaluations/notebooks/data_prep/ERA5-1deg-precipitation.ipynb` in the [AIMIP repository](https://github.com/ai2cm/AIMIP). `ERA5/day_1deg/` holds daily-mean ERA5 for October 1978 – December 1979 on a 180 × 360 Gaussian grid (about 1°). It was averaged from the 6-hourly ERA5 data Ai2 prepared for training ACE, by `evaluations/notebooks/data_prep/ERA5-daily-1deg.ipynb` in the same repository.
 
 ## Experiment design
 
@@ -119,7 +119,7 @@ Google/NeuralGCM/aimip-p4k/r2i1p1f1/day/tas/gn/v20260305/tas_day_NeuralGCM_aimip
 ArchesWeather/ArchesWeather-V2/aimip/r1i1p1f1/Amon/pr/gn/pr_Amon_ArchesWeather_aimip_r1i1p1f1_gn_197810-202501.nc
 ```
 
-Variable coverage differs by submission. All eight provide `ta`, `zg`, and `tas`; most provide `hus`, `ua`, `va`, `uas`, `vas`, `pr`, `ps`, and `ts`. DLESyM provides only `ta`, `zg`, `tas`, and `pr`. cBottle-1.3 additionally provides radiative and column-integrated fields (`rlut`, `rsds`, `rsut`, `prw`, `clivi`). ArchesWeather submissions provide `tos` and `psl`; NeuralGCM provides `tdas`.
+Variable coverage differs by submission. All eight provide `ta`, `zg`, and `tas`; most provide `hus`, `ua`, `va`, `uas`, `vas`, `pr`, `ps`, and `ts`. DLESyM provides only `ta`, `zg`, `tas`, and `pr`. cBottle-1.3 additionally provides radiative and column-integrated fields (`rlut`, `rsds`, `rsut`, `prw`, `clivi`). ArchesWeather submissions provide `tos` and `psl`; NeuralGCM provides `tdas` (2 m dewpoint temperature) instead of `huss`. The AIMIP protocol asked for `tdas` by mistake; the CMIP6 name is `tdps`.
 
 ## Usage
 
