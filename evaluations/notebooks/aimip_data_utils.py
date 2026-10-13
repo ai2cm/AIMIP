@@ -6,6 +6,7 @@ import fsspec
 import os
 from copy import deepcopy
 import dataclasses
+import functools
 from matplotlib import pyplot as plt
 from typing import Literal
 
@@ -681,6 +682,18 @@ def open_variable_from_path(
     variable_dataset = variable_dataset.drop_vars("height", errors="ignore") 
     return variable_dataset, missing
 
+def check_time_coverage(name: str, datasets: list[xr.Dataset], time_dim_name: str='time') -> None:
+    # the outer merge pads a variable with a shorter record with NaN, which the skipna means and regressions
+    # downstream then skip silently (the ERA5 pr file once started in 1979-10), so require equal coverage
+    indexes = {var: ds.indexes[time_dim_name] for ds in datasets if time_dim_name in ds.indexes for var in ds.data_vars}
+    if not indexes:
+        return
+    union = functools.reduce(lambda a, b: a.union(b), indexes.values())
+    short = {var: union.difference(index) for var, index in indexes.items() if len(index) != len(union)}
+    if short:
+        details = '; '.join(f'{var} lacks {len(missing)} steps ({missing[0]} to {missing[-1]})' for var, missing in short.items())
+        raise ValueError(f'{name}: variables cover different time steps: {details}')
+
 def open_aimip_data(
     experiment_submissions: list[ExperimentSubmission],
     evaluation_variables: list[EvaluationVariable],
@@ -708,6 +721,7 @@ def open_aimip_data(
                     template = realization_dataset
             evaluation_variable_dataset = xr.concat(realization_datasets, dim='realization', compat='no_conflicts', join='inner')
             evaluation_variable_datasets.append(evaluation_variable_dataset)
+        check_time_coverage(experiment_submission.name, evaluation_variable_datasets)
         experiment_submission_dataset = xr.merge(evaluation_variable_datasets, compat='no_conflicts', join='outer')
         experiment_submission_datasets[experiment_submission.name] =  experiment_submission_dataset
         missing_files[experiment_submission.name] = submission_missing_files
@@ -810,7 +824,7 @@ def compute_huss_from_tdas(tdas: xr.DataArray, ps: xr.DataArray) -> xr.DataArray
     return huss
 
 def convert_tdas_to_huss(ds: xr.Dataset) -> xr.Dataset:
-    if 'tdas' and 'ps' in ds.data_vars and 'huss' not in ds.data_vars:
+    if 'tdas' in ds.data_vars and 'ps' in ds.data_vars and 'huss' not in ds.data_vars:
         print("Converting 'tdas' to 'huss'.")
         ds['huss'] = compute_huss_from_tdas(ds['tdas'], ds['ps'])
         return ds.drop_vars(['tdas'])
@@ -865,7 +879,12 @@ def compute_decadal_trend(ds: xr.Dataset, start: str, end: str, time_dim_name: s
     return transfer_attrs(ds, trends)
 
 def compute_annual_mean(ds: xr.Dataset, time_dim_name: str='time') -> xr.Dataset:
-    annual_mean_ds = ds.groupby(f"{time_dim_name}.year").mean()
+    # monthly input: average only complete years, rather than silently averaging the months a partial year has
+    months_per_year = ds[time_dim_name].groupby(f"{time_dim_name}.year").count()
+    incomplete_years = months_per_year['year'].values[months_per_year.values < 12]
+    if len(incomplete_years):
+        print(f"Dropping incomplete years: {', '.join(str(year) for year in incomplete_years)}")
+    annual_mean_ds = ds.groupby(f"{time_dim_name}.year").mean().drop_sel(year=incomplete_years)
     return transfer_attrs(ds, annual_mean_ds)
 
 def compute_global_mean(ds: xr.Dataset, lat_dim: str='lat', lon_dim: str='lon') -> xr.Dataset:
