@@ -847,6 +847,10 @@ def linear_fit(x, y):
     return fit[0], fit[1]
 
 def compute_decadal_trend(ds: xr.Dataset, start: str, end: str, time_dim_name: str) -> xr.Dataset:
+    if time_dim_name == 'year':
+        # annual means are indexed by integer year; slicing them with date strings like '1979-01-01'
+        # silently drops the first year, so select whole years instead
+        start, end = int(str(start)[:4]), int(str(end)[:4])
     ds_subset = ds.sel(**{time_dim_name: slice(start, end)})
     trends, _ = xr.apply_ufunc(
         linear_fit,
