@@ -7,6 +7,7 @@ import os
 from copy import deepcopy
 import dataclasses
 import functools
+import scipy.sparse
 from matplotlib import pyplot as plt
 from typing import Literal
 
@@ -755,12 +756,16 @@ def add_latlon_to_dlesym(
     F, Y, X = xr.broadcast(
         dlesm_ds_out[face_dim], dlesm_ds_out[height_dim], dlesm_ds_out[width_dim],
     )
-    ipix = hp.xyf2pix(64, X.values, Y.values, F.values, nest=False)
+    ipix = hp.xyf2pix(nside, X.values, Y.values, F.values, nest=False)
     lon, lat = hp.pix2ang(nside, ipix, lonlat=True, nest=False)
 
-    # for some reason this is needed to map to the DLESyM variables properly
+    # DLESyM lays out each base face with its origin at the face's northern corner (rows running south-west,
+    # columns south-east), while healpy's xyf convention puts it at the southern corner: flip both in-face axes
+    # (the arrays are also assigned with width and height swapped below)
     lon = lon[:, ::-1, ::-1]
     lat = lat[:, ::-1, ::-1]
+    # ring index of each cell under that layout, so that sorting by it gives standard ring order
+    ipix = hp.ang2pix(nside, lon, lat, lonlat=True, nest=False)
 
     # assign as variables
     dlesm_ds_out[lon_name] = xr.DataArray(lon, dims=[face_dim, width_dim, height_dim])
@@ -773,8 +778,104 @@ def add_latlon_to_dlesym(
     dlesm_ds_out = dlesm_ds_out.drop_vars(["cell", face_dim, width_dim, height_dim]).rename({"cell": ipix_name})
     return dlesm_ds_out
 
+def is_healpix(ds: xr.Dataset, cell_dim: str='i') -> bool:
+    """True for a HEALPix dataset with one cell dimension holding every pixel (cBottle1.3, DLESyM)."""
+    return cell_dim in ds.dims and 'lat' not in ds.dims and bool(hp.isnpixok(ds.sizes[cell_dim]))
+
+@functools.lru_cache(maxsize=8)
+def healpix_conservative_weights(nside: int, lat_edges: tuple, lon_edges: tuple, supersampling: int=32):
+    """Sparse (n_lat * n_lon, n_pixels) weights for conservative remapping from a ring-ordered HEALPix grid
+    to a rectilinear grid with the given cell edges (ascending; lon edges spanning 360 degrees).
+
+    HEALPix pixels are equal-area, so the fraction of a target cell covered by each pixel is estimated by
+    counting the pixels of a finer HEALPix grid (nside * supersampling) whose centres fall in the cell,
+    grouped by their parent pixel. Pixels centred exactly on a cell edge are split between the cells.
+    At nside 64 the default (fine pixels about 0.03 degrees) is converged to 0.005 K RMS equatorward of 60
+    degrees for tas, compared with supersampling 64, and 0.02 K RMS (at most 0.45 K) poleward of 80 degrees,
+    where 1-degree cells are only a few fine pixels wide. Building takes about 15 s and 6 GB; 64 takes 4x that.
+    """
+    lat_edges, lon_edges = np.asarray(lat_edges), np.asarray(lon_edges)
+    n_lat, n_lon = len(lat_edges) - 1, len(lon_edges) - 1
+    nside_fine = nside * supersampling
+    fine = np.arange(hp.nside2npix(nside_fine))
+    parent = hp.nest2ring(nside, fine // supersampling ** 2)
+    lon, lat = hp.pix2ang(nside_fine, fine, nest=True, lonlat=True)
+    del fine
+    lon = (lon - lon_edges[0]) % 360 + lon_edges[0]
+    i_lat = np.searchsorted(lat_edges, lat, side='right') - 1
+    i_lon = np.minimum(np.searchsorted(lon_edges, lon, side='right') - 1, n_lon - 1)
+    # whole rings (and some columns) of fine pixel centres fall exactly on cell edges, e.g. the equator and
+    # 30N on a 1deg grid; split those pixels equally between the neighbouring cells instead of rounding them
+    # all to one side
+    on_lat = np.isclose(lat, lat_edges[np.clip(i_lat, 0, n_lat)], rtol=0, atol=1e-9)
+    on_lon = np.isclose(lon, lon_edges[np.clip(i_lon, 0, n_lon)], rtol=0, atol=1e-9)
+    weight = np.where(on_lat, 0.5, 1.0) * np.where(on_lon, 0.5, 1.0)
+    rows, cols, vals = [], [], []
+    for d_lat, d_lon in [(0, 0), (1, 0), (0, 1), (1, 1)]:
+        use = (on_lat if d_lat else True) & (on_lon if d_lon else True)
+        j_lat, j_lon = i_lat - d_lat, (i_lon - d_lon) % n_lon
+        keep = use & (j_lat >= 0) & (j_lat < n_lat)
+        rows.append(j_lat[keep] * n_lon + j_lon[keep])
+        cols.append(parent[keep])
+        vals.append(weight[keep])
+    counts = scipy.sparse.coo_matrix(
+        (np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))),
+        shape=(n_lat * n_lon, hp.nside2npix(nside)),
+    ).tocsr()
+    return counts
+
+def regrid_healpix_conservative(src: xr.Dataset, target_grid: xr.Dataset, cell_dim: str='i') -> xr.Dataset:
+    """Conservatively remap a ring-ordered HEALPix dataset onto a rectilinear target grid with lat/lon bounds.
+
+    Pixels must be in ring order along cell_dim; where the dataset carries cell coordinates they are checked
+    against that order. NaNs are skipped, with the weights renormalized over the valid pixels of each cell.
+    """
+    npix = src.sizes[cell_dim]
+    nside = hp.npix2nside(npix)
+    lat_name = next((n for n in ('lat', 'latitude') if n in src.variables), None)
+    lon_name = next((n for n in ('lon', 'longitude') if n in src.variables), None)
+    if lat_name and lon_name and src[lat_name].dims == (cell_dim,):
+        ring = hp.ang2pix(nside, src[lon_name].values, src[lat_name].values, lonlat=True)
+        assert np.array_equal(ring, np.arange(npix)), 'HEALPix cells are not in ring order'
+
+    def edges(bnds):
+        b = np.sort(bnds.values, axis=-1)
+        b = b[np.argsort(b[:, 0])]
+        assert np.allclose(b[1:, 0], b[:-1, 1]), 'target cells must be contiguous'
+        return tuple(np.append(b[:, 0], b[-1, 1]))
+    lat_edges, lon_edges = edges(target_grid['lat_bnds']), edges(target_grid['lon_bnds'])
+    assert np.isclose(lon_edges[-1] - lon_edges[0], 360), 'target grid must span all longitudes'
+    counts = healpix_conservative_weights(nside, lat_edges, lon_edges)
+    lat_out = np.sort(target_grid['lat'].values)
+    lon_out = np.sort(target_grid['lon'].values)
+
+    out = xr.Dataset()
+    for var, da in src.data_vars.items():
+        if cell_dim not in da.dims or var in ('lat', 'lon', 'latitude', 'longitude', cell_dim):
+            continue
+        other = [d for d in da.dims if d != cell_dim]
+        vals = da.transpose(*other, cell_dim).values.reshape(-1, npix)
+        valid = np.isfinite(vals)
+        num = (counts @ np.where(valid, vals, 0).T).T
+        den = (counts @ valid.T.astype(np.float64)).T
+        with np.errstate(invalid='ignore', divide='ignore'):
+            remapped = np.where(den > 0, num / den, np.nan)
+        if np.issubdtype(da.dtype, np.floating):
+            remapped = remapped.astype(da.dtype)  # keep the input precision, as xESMF does (and the caches small)
+        out[var] = xr.DataArray(
+            remapped.reshape(*[da.sizes[d] for d in other], len(lat_out), len(lon_out)),
+            dims=other + ['lat', 'lon'],
+            coords={**{d: da[d] for d in other if d in da.coords}, 'lat': lat_out, 'lon': lon_out},
+        )
+    # return in the target grid's own lat/lon order
+    out = out.reindex(lat=target_grid['lat'].values, lon=target_grid['lon'].values)
+    return transfer_attrs(src, out)
+
 def regrid_dataset(src: xr.Dataset, target_grid: xr.Dataset, sample_dims: list[str] | None=None, **regridder_kwargs) -> xr.Dataset:
     """Regrid dataset to target grid. Sample dimensions are those not part of the grid."""
+    if regridder_kwargs.get('method') == 'conservative' and is_healpix(src):
+        # ESMF needs cell bounds, which HEALPix doesn't come with; see regrid_healpix_conservative
+        return regrid_healpix_conservative(src, target_grid)
     # some grids with points at the poles (ArchesWeather) have bounds extending to +-90.5, which
     # corrupts conservative regridding onto the polar rows of a global target grid
     src, target_grid = [
