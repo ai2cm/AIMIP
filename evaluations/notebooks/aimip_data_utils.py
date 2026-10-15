@@ -1,5 +1,6 @@
 import xarray as xr
 import numpy as np
+import json
 import xesmf
 import healpy as hp
 import fsspec
@@ -30,6 +31,7 @@ DEFAULT_TIME_LABELS = {
 }
 
 ACE_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_ACE2-ERA5_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
+ACE22_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_ACE2-2-ERA5_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
 ARCHES_WEATHER_AIMIP_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
 ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeather_aimip_r{i_r}i1p1f1_{grid}_{time_period}.nc'
 ARCHES_WEATHER_GEN_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{varname}_{table}_ArchesWeatherGen_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
@@ -48,6 +50,9 @@ FILE_TEMPLATES = {
     'ACE2.1-ERA5-aimip': ACE_FILE_TEMPLATE,
     'ACE2.1-ERA5-aimip-p2k': ACE_FILE_TEMPLATE,
     'ACE2.1-ERA5-aimip-p4k': ACE_FILE_TEMPLATE,
+    'ACE2.2-ERA5-aimip': ACE22_FILE_TEMPLATE,
+    'ACE2.2-ERA5-aimip-p2k': ACE22_FILE_TEMPLATE,
+    'ACE2.2-ERA5-aimip-p4k': ACE22_FILE_TEMPLATE,
     'ArchesWeather-aimip': ARCHES_WEATHER_AIMIP_FILE_TEMPLATE,
     'ArchesWeather-aimip-p2k': ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE,
     'ArchesWeather-aimip-p4k': ARCHES_WEATHER_AIMIP_PK_FILE_TEMPLATE,
@@ -75,6 +80,7 @@ FILE_TEMPLATES = {
 DEFAULT_GFDL_AM4_CMIP6_VERSION_TAG = 'v20180807'
 CATEGORICAL_COLORS = [
     "#E69F00",  # orange         (Okabe-Ito)
+    "#332288",  # indigo         (Tol muted), ACE2.2-ERA5: placed second, its position in every figure, so the other models keep their colours
     "#56B4E9",  # sky blue       (Okabe-Ito)
     "#009E73",  # bluish green   (Okabe-Ito)
     "#0072B2",  # blue           (Okabe-Ito)
@@ -261,6 +267,22 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
         label='v20251130'
     ),
     ExperimentSubmission(
+        model_name='ACE2.2-ERA5',
+        submission_dir='Ai2/ACE2-2-ERA5',
+        experiment_name='aimip',
+        grid='gr',
+        grid_mapping={
+            'huss': 'gn',
+            'pr': 'gn',
+            'ps': 'gn',
+            'tas': 'gn',
+            'ts': 'gn',
+            'uas': 'gn',
+            'vas': 'gn',
+        },
+        label='v20260908'
+    ),
+    ExperimentSubmission(
         model_name='ArchesWeather',
         submission_dir='ArchesWeather/ArchesWeather-V2',
         experiment_name='aimip',
@@ -390,6 +412,22 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
         label='v20251130'
     ),
     ExperimentSubmission(
+        model_name='ACE2.2-ERA5',
+        submission_dir='Ai2/ACE2-2-ERA5',
+        experiment_name='aimip-p2k',
+        grid='gr',
+        grid_mapping={
+            'huss': 'gn',
+            'pr': 'gn',
+            'ps': 'gn',
+            'tas': 'gn',
+            'ts': 'gn',
+            'uas': 'gn',
+            'vas': 'gn',
+        },
+        label='v20260908'
+    ),
+    ExperimentSubmission(
         model_name='ArchesWeather',
         submission_dir='ArchesWeather/ArchesWeather-V2',
         experiment_name='aimip-p2k',
@@ -480,6 +518,22 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
             'vas': 'gn',   
         },
         label='v20251130'
+    ),
+    ExperimentSubmission(
+        model_name='ACE2.2-ERA5',
+        submission_dir='Ai2/ACE2-2-ERA5',
+        experiment_name='aimip-p4k',
+        grid='gr',
+        grid_mapping={
+            'huss': 'gn',
+            'pr': 'gn',
+            'ps': 'gn',
+            'tas': 'gn',
+            'ts': 'gn',
+            'uas': 'gn',
+            'vas': 'gn',
+        },
+        label='v20260908'
     ),
     ExperimentSubmission(
         model_name='ArchesWeather',
@@ -1054,3 +1108,74 @@ def load_gfdl_am4_from_cmip6_gcs(
     if var_ds.attrs:
         ds_out = ds_out.assign_attrs(var_ds.attrs)
     return ds_out, missing_paths
+
+
+# --- Cache provenance -------------------------------------------------------
+# The reduced caches in cached/ are keyed by filename alone, with the participant
+# axis inside each file, so a cache built from one submission version is
+# indistinguishable from one built from another: bumping a submission's `label`
+# without rebuilding silently re-renders the previous version's numbers. Stamp
+# each cache with the submission versions that produced it, and check that stamp
+# on restore, so a stale cache fails loudly instead.
+#
+# GFDL-CM4 is read from the CMIP6 GCS mirror rather than from local_data and
+# carries no submission label, so it does not appear in the signature.
+
+CACHE_SIGNATURE_ATTR = 'aimip_submissions'
+
+
+def submissions_signature(*submission_lists) -> str:
+    """Stable JSON description of which submission versions feed a product."""
+    signature = {}
+    for submissions in submission_lists:
+        for submission in submissions:
+            entry = {
+                'dir': submission.submission_dir,
+                'label': submission.label,
+            }
+            if submission.custom_label_mapping:
+                entry['custom_labels'] = submission.custom_label_mapping
+            signature[submission.experiment_submission_name] = entry
+    return json.dumps(signature, sort_keys=True)
+
+
+def _signature_diff(cached_signature: str, current_signature: str) -> str:
+    cached, current = json.loads(cached_signature), json.loads(current_signature)
+    differences = []
+    for key in sorted(set(cached) | set(current)):
+        if cached.get(key) != current.get(key):
+            differences.append(
+                f"{key}: cache={cached.get(key)} registry={current.get(key)}"
+            )
+    return '; '.join(differences)
+
+
+def write_cache(ds: xr.Dataset, path: str, *submission_lists) -> None:
+    """Write a reduced cache, stamped with the submission versions behind it."""
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
+    stamped = ds.assign_attrs(
+        {CACHE_SIGNATURE_ATTR: submissions_signature(*submission_lists)}
+    )
+    stamped.to_netcdf(path)
+
+
+def read_cache(path: str, *submission_lists) -> xr.Dataset:
+    """Open a reduced cache, refusing one built from other submission versions."""
+    ds = xr.open_dataset(path)
+    cached_signature = ds.attrs.get(CACHE_SIGNATURE_ATTR)
+    current_signature = submissions_signature(*submission_lists)
+    if cached_signature is None:
+        print(
+            f"WARNING: {os.path.basename(path)} carries no {CACHE_SIGNATURE_ATTR} "
+            "stamp, so it predates provenance checking and cannot be verified."
+        )
+    elif cached_signature != current_signature:
+        raise ValueError(
+            f"{os.path.basename(path)} was built from different submission versions "
+            f"than the current registry -- {_signature_diff(cached_signature, current_signature)}. "
+            "Rebuild it with RESET_CACHE = True."
+        )
+    return ds
