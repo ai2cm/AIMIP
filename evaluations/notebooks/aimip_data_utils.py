@@ -38,7 +38,7 @@ NEURAL_GCM_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varna
 NEURAL_GCM_HRD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_NeuralGCM-HRD_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
 CBOTTLE_FILE_TEMPLATE = 'r1i1p{i_r}f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_cBottle-1-3_{experiment_name}_r1i1p{i_r}f1_{grid}_{time_period}.nc'
 MD_FILE_TEMPLATE = 'r{i_r}i1p1f1/{table}/{varname}/{grid}/{label}/{varname}_{table}_MD-1p5_{experiment_name}_r{i_r}i1p1f1_{grid}_{time_period}.nc'
-ERA5_FILE_TEMLATE = 'mon_1deg/native6_ERA5_an_v1_Amon_{varname}_1978-2024.nc'
+ERA5_FILE_TEMLATE = 'mon_1deg_arco/native6_ERA5_an_v1_Amon_{varname}_1978-2024.nc'
 GFDL_CM4_AMIP_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-CM4/amip/r1i1p1f1/Amon/{varname}/gr1/v20180701'
 GFDL_CM4_AMIP_DAILY_ZARR_TEMPLATE = 'gs://cmip6/CMIP6/CMIP/NOAA-GFDL/GFDL-CM4/amip/r1i1p1f1/day/{varname}/gr1/v20180701'
 # gs://cmip6 is public: read it anonymously so stale or missing Google credentials can't break the load
