@@ -25,7 +25,7 @@ run just:
 
 You can **skip** the **Data loading & processing** section and the **Supplementary diagnostics** cells —
 they read the full (~1.8 TB) raw dataset. Each notebook's top markdown cell repeats these instructions.
-Figures are written to `notebooks/figures/manuscript_figures/`. Each manuscript and appendix figure is also saved as a small 100 dpi preview in `notebooks/figures/previews/`. The previews are tracked in git, unlike the full-resolution PNG and EPS files, so a pull request that changes a figure shows the change in GitHub's image diff.
+Figures are written to `notebooks/figures/manuscript_figures/`. Each manuscript and appendix figure is also saved as a small 100 dpi preview in `notebooks/figures/previews/`. The previews are tracked in git, unlike the full-resolution PNG and PDF files, so a pull request that changes a figure shows the change in GitHub's image diff.
 
 ## What the cache contains
 
