@@ -85,7 +85,7 @@ The Hugging Face snapshot already is what the notebooks read. If you sync from D
 - **Some files the evaluation config expects under `v20260304` are published on DKRZ only under `v20260305`.** This affects 78 NeuralGCM and NeuralGCM-HRD files, mostly monthly `ps`, `tas`, `tdas` and `ts` for the `+2K` and `+4K` experiments. Synced as-is they simply will not be found, and the loader substitutes NaN.
 - **Three monthly NeuralGCM-HRD files are truncated under `v20260304`**: `aimip` r1 `ua`, `aimip` r2 `tas`, and `aimip-p4k` r3 `pr`. DKRZ publishes the intact copies under `v20260312`; one was checked byte-for-byte against the snapshot and matches. The same pattern affects one daily file under `v20260309`.
 - **Thirty NeuralGCM-HRD daily `v20260306` files are truncated and will not open.** These are the originals behind the known gap described in the dataset card, not replacements for it. Every one has a size that is an exact multiple of 1 MiB, which no intact file in the archive does.
-- **ERA5 is incomplete on DKRZ**: the `ERA5/day_1deg` NetCDF that E4 reads is absent, as is the 1° monthly `Amon_pr`. The 1° monthly dewpoint is there as `Emon_tdps` rather than `Amon_tdas`. Take ERA5 from the snapshot, or rename that file and its variable to `tdas` and rebuild `pr` from `ERA5/mon` (see [ERA5 evaluation data](#era5-evaluation-data)).
+- **ERA5 on DKRZ has the monthly reference but not the daily one.** Sync DKRZ's `ERA5/mon_1deg/` into `ERA5/mon_1deg_dkrz_v3/`; the loader reads its file names as published. The daily files E4 reads, `ERA5/day_1deg_arco/`, are not on DKRZ (see [ERA5 evaluation data](#era5-evaluation-data)).
 - **Several trees can be skipped.** Nothing in E1–E5 reads `MPI-M/`, `ERA5/mon/`, `GPCP-SG/` or `catalog/`. `ArchesWeather/ArchesWeatherGen-V2/aimip-era5/` duplicates files already present at their correct paths.
 
 ### Expected directory structure
@@ -103,15 +103,14 @@ local_data/
 
 ### ERA5 evaluation data
 
-The 1° ERA5 reference data comes from three sources:
+The 1° ERA5 reference data comes from two sources, both on the regular 1° grid of the evaluations:
 
-- **`ERA5/mon_1deg/`, every variable except `pr`:** monthly means prepared for AIMIP evaluation with ESMValTool by Nikolay Koldunov and Bettina Gier. All are on the DKRZ store; `tdas` is DKRZ's `native6_ERA5_an_v1_Emon_tdps_1978-2024.nc` with the file and variable renamed from `tdps` to `tdas`.
-- **`ERA5/mon_1deg/` `pr`:** conservatively regridded from the 0.25° ERA5 monthly precipitation in `ERA5/mon` by [`notebooks/data_prep/ERA5-1deg-precipitation.ipynb`](notebooks/data_prep/ERA5-1deg-precipitation.ipynb).
-- **`ERA5/day_1deg/`:** daily means for October 1978 – December 1979 on a 180 × 360 Gaussian grid, built by [`notebooks/data_prep/ERA5-daily-1deg.ipynb`](notebooks/data_prep/ERA5-daily-1deg.ipynb) from the 6-hourly ERA5 data Ai2 prepared for training ACE. That source isn't public, so use the copy in the Hugging Face snapshot.
+- **`ERA5/mon_1deg_dkrz_v3/` (monthly, E1–E4):** monthly means for 1978–2024 prepared for AIMIP with ESMValTool by Bettina Gier, conservatively regridded in one step from 0.25° ERA5. They are version 3 of the files on the DKRZ store (`s3://ai-mip/ERA5/mon_1deg/`, endpoint `https://s3.dkrz.cloud`, anonymous access), used as published; the folder includes DKRZ's README and the recipe, `recipe_era5_aimip_mon.yml`. Precipitation is in `native6_ERA5_fc_v1_Amon_pr_1978-2024.nc` and 2 m dewpoint in `native6_ERA5_an_v1_Emon_tdps_1978-2024.nc`; the loader reads the dewpoint's `tdps` as `tdas`. `ts` is skin temperature everywhere.
+- **`ERA5/day_1deg_arco/` (daily, E4):** daily means for 1 October 1978 – 31 December 1979 and for 2024, built by [`notebooks/data_prep/ERA5-monthly-1deg-ARCO.ipynb`](notebooks/data_prep/ERA5-monthly-1deg-ARCO.ipynb) from the public hourly ERA5 data in the ARCO-ERA5 mirror. Each day is the mean of its 24 hourly values, regridded conservatively. The same notebook also computes monthly means; they agree with DKRZ's files (for example, `tas` to 0.001 K RMS).
 
 ### Near-surface humidity
 
-The AIMIP protocol asked for 2 m dewpoint temperature as `tdas`, which was a mistake: the CMIP6 name is `tdps`. Submissions use `tdas` as requested, and so does the code. ERA5's dewpoint file is DKRZ's `Emon_tdps` renamed to `tdas` to match.
+The AIMIP protocol asked for 2 m dewpoint temperature as `tdas`, which was a mistake: the CMIP6 name is `tdps`. Submissions use `tdas` as requested, and so does the code. The loader renames ERA5's `tdps` to `tdas` to match.
 
 The evaluations compare near-surface specific humidity, `huss`. NeuralGCM and NeuralGCM-HRD (monthly and daily) and the ERA5 monthly files provide dewpoint instead, so the loader converts it to `huss` with surface pressure, using ECMWF's formula, after time averaging. Because the formula is nonlinear, this is not exactly the mean of `huss` itself: ERA5's monthly value comes out about 1% too dry. The ERA5 daily file already contains `huss`. Submissions that provide `huss` directly (ACE2.1-ERA5, MD-1.5, cBottle1.3, GFDL-CM4) are compared against that converted ERA5 value; NeuralGCM and NeuralGCM-HRD are converted the same way as ERA5.
 
