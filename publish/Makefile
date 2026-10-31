@@ -67,16 +67,19 @@ check:
 create-repo: check-config
 	$(CONDA_RUN) hf repos create $(REPO_ID) --type $(REPO_TYPE) --private --exist-ok
 
-# Small timing probe (ERA5 daily, ~4.5 GB) before committing to the full upload.
+# Small timing probe (ERA5 daily, ~8.3 GB) before committing to the full upload.
 probe: check-config
-	HF_XET_HIGH_PERFORMANCE=1 $(CONDA_RUN) hf upload $(REPO_ID) $(STAGING)/ERA5/day_1deg ERA5/day_1deg --type $(REPO_TYPE) --commit-message "Probe upload: ERA5/day_1deg"
+	HF_XET_HIGH_PERFORMANCE=1 $(CONDA_RUN) hf upload $(REPO_ID) $(STAGING)/ERA5/day_1deg_arco ERA5/day_1deg_arco --type $(REPO_TYPE) --commit-message "Probe upload: ERA5/day_1deg_arco"
 
 # Full upload. Resumable: rerun the same target after an interruption and already-committed files are skipped.
-upload: check-config
-	HF_XET_HIGH_PERFORMANCE=1 $(CONDA_RUN) hf upload $(REPO_ID) $(STAGING) . --type $(REPO_TYPE) --commit-message "$(MSG)"
+# --delete "*" makes the commit mirror the staging tree: remote files that are no longer staged
+# (dropped from the scope) are deleted in the same commit; the Hub keeps .gitattributes. Gated
+# on `check`, so a missing or partial staging tree cannot empty the repo.
+upload: check-config check
+	HF_XET_HIGH_PERFORMANCE=1 $(CONDA_RUN) hf upload $(REPO_ID) $(STAGING) . --type $(REPO_TYPE) --delete "*" --commit-message "$(MSG)"
 
 # Targeted upload for small edits (dataset card, licenses) that do not warrant restaging or
-# re-syncing the 1.8 TB tree. Files go from assets/ to the same relative path in the repo,
+# re-syncing the full tree. Files go from assets/ to the same relative path in the repo,
 # committed straight to the dataset's main branch.
 #   make upload-assets                  # everything under assets/
 #   make upload-assets FILE=README.md   # one file

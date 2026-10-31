@@ -26,14 +26,14 @@ E1–E5 notebooks on `main` read.
 |---|---|
 | Ai2 ACE2.1-ERA5 (+ its dataset card and license) | MPI-M MPI-ESM1-2-LR (CMIP6 template, CC BY-SA) |
 | ArchesWeather-V2, ArchesWeatherGen-V2 | native-resolution `ERA5/mon` (used only by an example notebook) |
-| DLESyM (both submitted versions) | `GPCP-SG` (not read by the notebooks) |
+| DLESyM | `GPCP-SG` (not read by the notebooks) |
 | Google NeuralGCM, NeuralGCM-HRD | Jupyter checkpoint directories, truncated upload leftovers |
 | NVIDIA cBottle-1-3 (+ its README, data card, config) | placeholder "area for uploads" READMEs |
 | UMD-PARETO MD-1p5 | |
-| ERA5 1° monthly and daily reference data | |
+| ERA5 1° monthly and daily reference data (`ERA5/mon_1deg_dkrz_v3`, `ERA5/day_1deg_arco`) | superseded versions: NeuralGCM and NeuralGCM-HRD `v202512*`, DLESyM `v20250825`, MD-1p5 `v20251214`, cBottle-1-3 `v20260120` and `v20260217`, ERA5 `mon_1deg` and `day_1deg` (all in `phase1-2026-09`) |
 | root `LICENSE.txt` and `README.md` (dataset card) | |
 
-About 4,900 files and 1.78 TB. Per-group documentation is published exactly as the groups
+About 3,300 files and 1.36 TB, each submission at the version the evaluations read. Per-group documentation is published exactly as the groups
 submitted it; nothing is generated on their behalf. Small files that override or add to the
 source tree live in [`assets/`](assets/) (root dataset card, root license, Ai2 license notice).
 
@@ -59,8 +59,8 @@ make stage          # hard-link source files + copy assets into staging_dir
 make check          # scope rules and expected totals (seconds); must print CHECK OK
 make manifest       # sha256 of every staged file, 8 workers (~25 min) -> publish/MANIFEST.sha256
 make create-repo    # private dataset repo
-make probe          # 4.5 GB timing upload (ERA5/day_1deg); note the MB/s before continuing
-make upload         # full upload; resumable, rerun the same target after an interruption
+make probe          # 8.3 GB timing upload (ERA5/day_1deg_arco); note the MB/s before continuing
+make upload         # runs `check`, then uploads; resumable, rerun after an interruption
 make verify         # uploaded revision vs. MANIFEST.sha256 (seconds)
 make publish        # flip to public
 make tag TAG=phase1-YYYY-MM
@@ -108,16 +108,18 @@ the staging tree and manifest are refreshed with `make stage` then `make manifes
 ## Changing the scope
 
 Edit `dataset.yaml` (`include`, `exclude_globs`, `expected`), then rerun from `make stage`
-(`stage` prunes files that dropped out of scope) through `make verify`. Each `make upload` is a new
+(`stage` prunes files that dropped out of scope) through `make verify`. `make upload` mirrors the
+staging tree, so files that dropped out of scope are deleted from the repo in the same commit;
+earlier revisions and their tags keep them. Each `make upload` is a new
 commit on the dataset repo; generate a new DOI for revisions that should be citable on their own.
 
 ## Expectations
 
 | Step | Rough cost |
 |---|---|
-| `make upload` | 2–5 h for 1.78 TB from a cloud VM; measure with `make probe` first |
+| `make upload` | 2–5 h for the first upload (1.78 TB, 2026-09) from a cloud VM; measure with `make probe` first |
 | `make manifest` (optional) | 30–40 min at ~1 GB/s local disk read |
-| cloud egress | on the order of $150–210 for 1.78 TB leaving GCP |
+| cloud egress | on the order of $150–210 for the first upload (1.78 TB leaving GCP) |
 
 Hugging Face repository limits (checked September 2026): <100k files per repo, ≤10k entries per
 folder, files <200 GB. This dataset is well inside all three (≤26 files per folder, largest file 5.4 GB).

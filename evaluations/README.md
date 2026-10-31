@@ -26,7 +26,7 @@ The same files are available from two places. Both produce the `local_data/` lay
 | Source | Contents | Use it for |
 |---|---|---|
 | DKRZ S3, `s3://ai-mip/` | the live archive: every submission, the MPI-ESM1-2-LR formatting template, native-resolution ERA5 and GPCP-SG | the authoritative, current copy |
-| Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) | a fixed snapshot of exactly what the E1–E5 notebooks read, about 1.8 TB | reproducing the published evaluation; a single resumable command |
+| Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) | a fixed snapshot of exactly what the E1–E5 notebooks read, about 1.4 TB | reproducing the published evaluation; a single resumable command |
 
 #### From DKRZ S3
 
@@ -62,31 +62,34 @@ aws s3 sync s3://ai-mip/ERA5/ ./local_data/ERA5/ \
 ```bash
 pip install "huggingface_hub[hf_xet]"
 
-# Everything the notebooks read (~1.8 TB), straight into local_data/
+# Everything the notebooks read (~1.4 TB), straight into local_data/
 hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data
 
 # Or one submission plus the ERA5 reference data
 hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data \
     --include "DLESyM/*" "ERA5/*"
 
-# Or the exact revision evaluated in the paper
+# Or the exact revision these notebooks were run on
 hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data \
-    --revision phase1-2026-09
+    --revision PENDING_TAG
 ```
 
 Downloads resume if interrupted: rerun the same command and completed files are skipped.
 
-This snapshot is citable as **DOI [10.57967/hf/10490](https://doi.org/10.57967/hf/10490)**. It is the submission data the evaluations use, pinned to the revision behind the published results, plus the 1° ERA5 reference data. It deliberately omits the MPI-ESM1-2-LR formatting template, the native-resolution `ERA5/mon` collection and `GPCP-SG`, none of which the E1–E5 notebooks read; take those from DKRZ if you need them. Its dataset card documents the per-submission grids, variables and known gaps.
+This snapshot is citable as **DOI [PENDING_DOI](https://doi.org/PENDING_DOI)** (revision `PENDING_TAG`). It is the submission data the evaluations use, each submission at the version they read, plus the 1° ERA5 reference data. It deliberately omits the MPI-ESM1-2-LR formatting template, the native-resolution `ERA5/mon` collection, `GPCP-SG` and superseded submission versions, none of which the E1–E5 notebooks read; take those from DKRZ if you need them. Its dataset card documents the per-submission grids, variables and known gaps, and what changed between revisions.
+
+The first revision, `phase1-2026-09` (DOI [10.57967/hf/10490](https://doi.org/10.57967/hf/10490)), is the one behind the first version of the preprint. It holds the earlier ERA5 reference files, which the current notebooks no longer read.
 
 ### Starting from DKRZ
 
-The Hugging Face snapshot already is what the notebooks read. If you sync from DKRZ instead, five things need attention. Compared file-by-file on 2026-09-18.
+The Hugging Face snapshot already is what the notebooks read. If you sync from DKRZ instead, six things need attention. Checked against DKRZ on 2026-10-28.
 
-- **Some files the evaluation config expects under `v20260304` are published on DKRZ only under `v20260305`.** This affects 78 NeuralGCM and NeuralGCM-HRD files, mostly monthly `ps`, `tas`, `tdas` and `ts` for the `+2K` and `+4K` experiments. Synced as-is they simply will not be found, and the loader substitutes NaN.
+- **Some files the evaluation config expects under `v20260304` are published on DKRZ only under `v20260305`.** This affects 82 NeuralGCM and NeuralGCM-HRD files: 76 monthly, mostly `ps`, `tas`, `tdas` and `ts` for the `+2K` and `+4K` experiments, and six NeuralGCM-HRD daily `pr`. Synced as-is they simply will not be found, and the loader substitutes NaN.
 - **Three monthly NeuralGCM-HRD files are truncated under `v20260304`**: `aimip` r1 `ua`, `aimip` r2 `tas`, and `aimip-p4k` r3 `pr`. DKRZ publishes the intact copies under `v20260312`; one was checked byte-for-byte against the snapshot and matches. The same pattern affects one daily file under `v20260309`.
 - **Thirty NeuralGCM-HRD daily `v20260306` files are truncated and will not open.** These are the originals behind the known gap described in the dataset card, not replacements for it. Every one has a size that is an exact multiple of 1 MiB, which no intact file in the archive does.
+- **Three NeuralGCM files are truncated and will not open**: `aimip-p2k` r1 monthly `va` (`v20260304`), and `aimip-p4k` r4 daily `hus` for 1978–79 (`v20260305`) and daily `va` for 2024 (`v20260306`). DKRZ has no intact copies, so the snapshot leaves them out; delete them after syncing. The notebooks read none of them.
 - **ERA5 on DKRZ has the monthly reference but not the daily one.** Sync DKRZ's `ERA5/mon_1deg/` into `ERA5/mon_1deg_dkrz_v3/`; the loader reads its file names as published. The daily files E4 reads, `ERA5/day_1deg_arco/`, are not on DKRZ (see [ERA5 evaluation data](#era5-evaluation-data)).
-- **Several trees can be skipped.** Nothing in E1–E5 reads `MPI-M/`, `ERA5/mon/`, `GPCP-SG/` or `catalog/`. `ArchesWeather/ArchesWeatherGen-V2/aimip-era5/` duplicates files already present at their correct paths.
+- **Several trees can be skipped.** Nothing in E1–E5 reads `MPI-M/`, `ERA5/mon/`, `ERA5/mon_1deg_bilinear_20260128/`, `GPCP-SG/` or `catalog/`, nor the older submission versions DKRZ keeps: DLESyM `v20250825`, MD-1.5 `v20251214`, and cBottle-1.3 `v20260120` and `v20260217`. `ArchesWeather/ArchesWeatherGen-V2/aimip-era5/` duplicates files already present at their correct paths.
 
 ### Expected directory structure
 

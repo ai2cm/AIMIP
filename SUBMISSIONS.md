@@ -8,7 +8,7 @@ V1: Dec. 15, 2025: Initial submisssion table (Brian Henn)
 
 Submission data is stored on DKRZ S3 (`s3://ai-mip/` at `https://s3.dkrz.cloud`) and can be accessed anonymously. The example paths in the table below refer to that store.
 
-The subset used in the Phase 1 evaluations is also published as a citable snapshot on Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) (DOI [10.57967/hf/10490](https://doi.org/10.57967/hf/10490)). See [evaluations/README.md § Downloading data](evaluations/README.md#downloading-data) for both routes.
+The subset used in the Phase 1 evaluations is also published as a citable snapshot on Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) (DOI [PENDING_DOI](https://doi.org/PENDING_DOI)). See [evaluations/README.md § Downloading data](evaluations/README.md#downloading-data) for both routes.
 
 Using Python (`s3fs`):
 

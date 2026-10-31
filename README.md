@@ -42,7 +42,7 @@ V6: Mar. 26, 2026:
 V7: May 13, 2026: 
 
 * The AIMIP Phase 1 manuscript is now [available on arXix](https://arxiv.org/abs/2605.06944).
-* Information on how to access the Phase 1 dataset is available [here](evaluations/README.md#data). The evaluated subset is published as a citable snapshot on Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) (DOI [10.57967/hf/10490](https://doi.org/10.57967/hf/10490)).
+* Information on how to access the Phase 1 dataset is available [here](evaluations/README.md#data). The evaluated subset is published as a citable snapshot on Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) (DOI [PENDING_DOI](https://doi.org/PENDING_DOI)).
 
 **Goals of AIMIP Phase 1 (AIMIP-1)**
 
