@@ -55,7 +55,9 @@ Notes on the table:
 
 ### Reference data
 
-`ERA5/mon_1deg/` holds monthly-mean ERA5 for 1978–2024 on a regular 1° grid, one file per variable (`hus`, `pr`, `ps`, `psl`, `ta`, `tas`, `tdas`, `ts`, `ua`, `uas`, `va`, `vas`, `zg`). All variables except `pr` were prepared for AIMIP evaluation with ESMValTool by Nikolay Koldunov and Bettina Gier. `pr` was conservatively regridded from 0.25° ERA5 monthly precipitation by `evaluations/notebooks/data_prep/ERA5-1deg-precipitation.ipynb` in the [AIMIP repository](https://github.com/ai2cm/AIMIP). `ERA5/day_1deg/` holds daily-mean ERA5 for October 1978 – December 1979 on a 180 × 360 Gaussian grid (about 1°). It was averaged from the 6-hourly ERA5 data Ai2 prepared for training ACE, by `evaluations/notebooks/data_prep/ERA5-daily-1deg.ipynb` in the same repository.
+`ERA5/mon_1deg_dkrz_v3/` holds monthly-mean ERA5 for 1978–2024 on a regular 1° grid, one file per variable (`hus`, `pr`, `ps`, `psl`, `ta`, `tas`, `tdps`, `ts`, `ua`, `uas`, `va`, `vas`, `zg`). They were prepared for AIMIP evaluation with ESMValTool by Bettina Gier (University of Bremen), conservatively regridded in one step from 0.25° ERA5, and are version 3 of the files on the DKRZ store, published unchanged. `README.txt` and the recipe `recipe_era5_aimip_mon.yml` in the same folder record the sources and settings. `ts` is skin temperature everywhere.
+
+`ERA5/day_1deg_arco/` holds daily-mean ERA5 on the same grid for 1 October 1978 – 31 December 1979 and for 2024, the two periods of the daily submissions. Each day is the mean of its 24 hourly values from the public [ARCO-ERA5](https://github.com/google-research/arco-era5) mirror, conservatively regridded, built by `evaluations/notebooks/data_prep/ERA5-monthly-1deg-ARCO.ipynb` in the [AIMIP repository](https://github.com/ai2cm/AIMIP).
 
 ## Experiment design
 
@@ -115,18 +117,18 @@ Examples:
 
 ```
 Ai2/ACE2-1-ERA5/aimip/r1i1p1f1/Amon/ta/gr/v20251130/ta_Amon_ACE2-ERA5_aimip_r1i1p1f1_gr_197810-202412.nc
-Google/NeuralGCM/aimip-p4k/r2i1p1f1/day/tas/gn/v20260305/tas_day_NeuralGCM_aimip-p4k_r2i1p1f1_gn_20240101-20241231.nc
-ArchesWeather/ArchesWeather-V2/aimip/r1i1p1f1/Amon/pr/gn/pr_Amon_ArchesWeather_aimip_r1i1p1f1_gn_197810-202501.nc
+Google/NeuralGCM/aimip-p4k/r2i1p1f1/day/tas/gn/v20260306/tas_day_NeuralGCM_aimip-p4k_r2i1p1f1_gn_20240101-20241231.nc
+ArchesWeather/ArchesWeather-V2/aimip/r1i1p1f1/Amon/tas/gn/tas_Amon_ArchesWeather_aimip_r1i1p1f1_gn_197810-202501.nc
 ```
 
-Variable coverage differs by submission. All eight provide `ta`, `zg`, and `tas`; most provide `hus`, `ua`, `va`, `uas`, `vas`, `pr`, `ps`, and `ts`. DLESyM provides only `ta`, `zg`, `tas`, and `pr`. cBottle-1.3 additionally provides radiative and column-integrated fields (`rlut`, `rsds`, `rsut`, `prw`, `clivi`). ArchesWeather submissions provide `tos` and `psl`; NeuralGCM provides `tdas` (2 m dewpoint temperature) instead of `huss`. The AIMIP protocol asked for `tdas` by mistake; the CMIP6 name is `tdps`.
+Variable coverage differs by submission. All eight provide `ta`, `zg`, and `tas`; most provide `hus`, `ua`, `va`, `uas`, `vas`, `pr`, `ps`, and `ts`. DLESyM provides only `ta`, `zg`, `tas`, and `pr`. cBottle-1.3 additionally provides radiative and column-integrated fields (`rlut`, `rsds`, `rsut`, `prw`, `clivi`). ArchesWeather submissions provide `tos` and `psl`, and no `pr`; NeuralGCM provides `tdas` (2 m dewpoint temperature) instead of `huss`. The AIMIP protocol asked for `tdas` by mistake; the CMIP6 name is `tdps`.
 
 ## Usage
 
 Download the whole dataset, or a subset, with the Hugging Face CLI:
 
 ```bash
-# everything (~1.8 TB)
+# everything (~1.4 TB)
 hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data
 
 # one submission plus the ERA5 reference data
@@ -151,6 +153,7 @@ ta = ds["ta"]  # (time, plev, lat, lon); plev in Pa
 These do not affect the overall characteristics of the dataset, but are worth knowing before computing ensemble statistics.
 
 - **NeuralGCM-HRD**, daily `v20260306` (`hus`, `ta`, `ua`, `va`): some realization/period files were removed after a corrupted upload and were not replaced. Seven of the 1978–79 files are absent, so those variables have three or four members rather than five for that period.
+- **NeuralGCM**: three files were truncated in the source archive and are left out, so these have four members rather than five: `aimip-p2k` monthly `va` (`r1i1p1f1` absent), and `aimip-p4k` daily `hus` for 1978–79 and daily `va` for 2024 (`r4i1p1f1` absent).
 - **ArchesWeather-V2**, `aimip-p4k`: four realizations; `r3i1p1f1` is absent.
 - **cBottle-1.3**, `aimip-p2k` and `aimip-p4k`: a single member (`r1i1p4f1`) rather than five.
 
@@ -158,7 +161,16 @@ The AIMIP evaluation code fills missing realizations with NaN and continues, so 
 
 ## Provenance
 
-Snapshot of the AIMIP archive hosted by DKRZ at `s3://ai-mip`, taken 2026-03-31, plus the DLESyM `v20260406` resubmission from April 2026 and the license and documentation files. It is published here as a citable, immutable revision of the Phase 1 submissions for the evaluation paper.
+Snapshot of the AIMIP archive hosted by DKRZ at `s3://ai-mip`, taken 2026-03-31, plus the DLESyM `v20260406` resubmission from April 2026 and the license and documentation files. It is published here as a citable, immutable revision of the Phase 1 submissions for the evaluation paper. Each submission is included at the version the evaluations read; the ERA5 reference data were replaced in October 2026 (see below).
+
+### Changes since `phase1-2026-09`
+
+The first revision, tagged `phase1-2026-09`, remains available unchanged. Since then:
+
+- **ERA5 monthly reference replaced.** Apart from `pr`, `ERA5/mon_1deg/` was interpolated bilinearly from ERA5's native grid, so even a perfect model regridded conservatively showed a bias near coastlines and steep terrain. It also had a spurious column at longitude 359.5° near the poles, and its `pr` file lacked January 1978 – September 1979. `ERA5/mon_1deg_dkrz_v3/` is conservatively regridded throughout and complete.
+- **ERA5 daily reference rebuilt.** `ERA5/day_1deg/` (a Gaussian grid, each day the mean of four 6-hourly values) is replaced by `ERA5/day_1deg_arco/` (the regular 1° grid, 24-hour means, built from public data, and adding 2024).
+- **Superseded submission versions removed:** NeuralGCM and NeuralGCM-HRD `v202512*`, DLESyM `v20250825`, MD-1.5 `v20251214`, and cBottle-1.3 `v20260120` and `v20260217`. The evaluations read none of them.
+- **Five truncated files removed** that could not be opened: two were among the superseded versions, and the other three are listed under the known gaps above.
 
 ## License
 
