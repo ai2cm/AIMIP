@@ -71,12 +71,12 @@ hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_da
 
 # Or the exact revision these notebooks were run on
 hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data \
-    --revision PENDING_TAG
+    --revision phase1-2026-10
 ```
 
 Downloads resume if interrupted: rerun the same command and completed files are skipped.
 
-This snapshot is citable as **DOI [PENDING_DOI](https://doi.org/PENDING_DOI)** (revision `PENDING_TAG`). It is the submission data the evaluations use, each submission at the version they read, plus the 1° ERA5 reference data. It deliberately omits the MPI-ESM1-2-LR formatting template, the native-resolution `ERA5/mon` collection, `GPCP-SG` and superseded submission versions, none of which the E1–E5 notebooks read; take those from DKRZ if you need them. Its dataset card documents the per-submission grids, variables and known gaps, and what changed between revisions.
+This snapshot is citable as **DOI [10.57967/hf/11385](https://doi.org/10.57967/hf/11385)** (revision `phase1-2026-10`). It is the submission data the evaluations use, each submission at the version they read, plus the 1° ERA5 reference data. It deliberately omits the MPI-ESM1-2-LR formatting template, the native-resolution `ERA5/mon` collection, `GPCP-SG` and superseded submission versions, none of which the E1–E5 notebooks read; take those from DKRZ if you need them. Its dataset card documents the per-submission grids, variables and known gaps, and what changed between revisions.
 
 The first revision, `phase1-2026-09` (DOI [10.57967/hf/10490](https://doi.org/10.57967/hf/10490)), is the one behind the first version of the preprint. It holds the earlier ERA5 reference files, which the current notebooks no longer read.
 

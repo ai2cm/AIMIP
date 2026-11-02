@@ -109,9 +109,11 @@ the staging tree and manifest are refreshed with `make stage` then `make manifes
 
 Edit `dataset.yaml` (`include`, `exclude_globs`, `expected`), then rerun from `make stage`
 (`stage` prunes files that dropped out of scope) through `make verify`. `make upload` mirrors the
-staging tree, so files that dropped out of scope are deleted from the repo in the same commit;
-earlier revisions and their tags keep them. Each `make upload` is a new
-commit on the dataset repo; generate a new DOI for revisions that should be citable on their own.
+staging tree, so files that dropped out of scope are deleted from the repo; earlier revisions and
+their tags keep them. The client commits a large upload to `main` in batches: deletions go in the
+first commit, additions follow as `(part N)` commits, and only the last is complete. Tag and
+generate the DOI after `make verify` passes, with no other commit in between (the DOI covers the
+current `main`). Generate a new DOI for revisions that should be citable on their own.
 
 ## Expectations
 

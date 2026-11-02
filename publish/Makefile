@@ -72,9 +72,10 @@ probe: check-config
 	HF_XET_HIGH_PERFORMANCE=1 $(CONDA_RUN) hf upload $(REPO_ID) $(STAGING)/ERA5/day_1deg_arco ERA5/day_1deg_arco --type $(REPO_TYPE) --commit-message "Probe upload: ERA5/day_1deg_arco"
 
 # Full upload. Resumable: rerun the same target after an interruption and already-committed files are skipped.
-# --delete "*" makes the commit mirror the staging tree: remote files that are no longer staged
-# (dropped from the scope) are deleted in the same commit; the Hub keeps .gitattributes. Gated
-# on `check`, so a missing or partial staging tree cannot empty the repo.
+# --delete "*" makes the upload mirror the staging tree: remote files that are no longer staged
+# (dropped from the scope) are deleted in its first commit; the Hub keeps .gitattributes. Large
+# uploads land as several commits ("(part N)"); only the last is complete. Gated on `check`, so
+# a missing or partial staging tree cannot empty the repo.
 upload: check-config check
 	HF_XET_HIGH_PERFORMANCE=1 $(CONDA_RUN) hf upload $(REPO_ID) $(STAGING) . --type $(REPO_TYPE) --delete "*" --commit-message "$(MSG)"
 
