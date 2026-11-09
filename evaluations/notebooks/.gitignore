@@ -2,6 +2,7 @@
 # small figure previews are tracked, so pull requests show figure changes in GitHub's image diff
 !figures/previews/*.png
 *.eps
+*.pdf
 .ipynb_checkpoints
 __pycache__/
 *.tar.gz

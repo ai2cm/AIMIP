@@ -36,8 +36,10 @@ include:
   - NVIDIA/data-card.md
   - NVIDIA/config.json
   - UMD-PARETO/MD-1p5
-  - ERA5/mon_1deg
-  - ERA5/day_1deg
+  # ERA5 references: DKRZ's ESMValTool monthly files (version 3, with their README and
+  # recipe) and the daily means built from ARCO-ERA5 by evaluations/notebooks/data_prep
+  - ERA5/mon_1deg_dkrz_v3
+  - ERA5/day_1deg_arco
 
 # Directory names dropped wherever they appear, at any depth including the root.
 exclude_dirs:
@@ -49,6 +51,14 @@ exclude_globs:
   # ArchesWeatherGen-V2/aimip-era5/ holds 13 files nested one level too deep; each is
   # byte-identical (sha256) to the aimip-p2k file already published at its correct path.
   - "ArchesWeather/ArchesWeatherGen-V2/aimip-era5/*"
+  # Superseded versions: the snapshot holds only the versions the evaluations read
+  # (NeuralGCM and NeuralGCM-HRD v202603xx, DLESyM v20260406, MD-1.5 v20251217,
+  # cBottle-1.3 v20260323). Older versions stay in the phase1-2026-09 revision.
+  - "Google/NeuralGCM*/v202512*/*"
+  - "DLESyM/DLESyM/*/v20250825/*"
+  - "UMD-PARETO/MD-1p5/*/v20251214/*"
+  - "NVIDIA/CMIP6/*/v20260120/*"
+  - "NVIDIA/CMIP6/*/v20260217/*"
 
 # Small files placed into the staging tree at the same relative path, overriding
 # anything linked from `source_dir` (root README.md dataset card, root LICENSE.txt,
@@ -57,10 +67,10 @@ assets_dir: assets
 
 # Constraints enforced by `make check`.
 expected:
-  min_files: 4880
-  max_files: 5100
-  total_bytes_min: 1.70e12
-  total_bytes_max: 1.85e12
+  min_files: 3200
+  max_files: 3400
+  total_bytes_min: 1.30e12
+  total_bytes_max: 1.45e12
   required_root_files:
     - README.md
     - LICENSE.txt
@@ -70,7 +80,15 @@ expected:
     - ERA5/mon/
     - GPCP-SG/
     - Ai2/ACE2-2-ERA5/
+    - ERA5/mon_1deg/              # superseded references, published in phase1-2026-09
+    - ERA5/day_1deg/
+    - ERA5/mon_1deg_arco/         # independent check of the DKRZ files; nothing reads it
   forbidden_dirs:
     - .ipynb_checkpoints
   forbidden_globs:
     - "*.nc.~*~"
+    - "Google/NeuralGCM*/v202512*/*"
+    - "DLESyM/DLESyM/*/v20250825/*"
+    - "UMD-PARETO/MD-1p5/*/v20251214/*"
+    - "NVIDIA/CMIP6/*/v20260120/*"
+    - "NVIDIA/CMIP6/*/v20260217/*"
