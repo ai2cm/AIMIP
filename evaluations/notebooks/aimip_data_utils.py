@@ -281,7 +281,7 @@ AIMIP_EXPERIMENT_SUBMISSIONS = [
             'uas': 'gn',
             'vas': 'gn',
         },
-        label='v20260908'
+        label='v20261107'
     ),
     ExperimentSubmission(
         model_name='ArchesWeather',
@@ -428,7 +428,7 @@ AIMIP_P2K_EXPERIMENT_SUBMISSIONS = [
             'uas': 'gn',
             'vas': 'gn',
         },
-        label='v20260908'
+        label='v20261107'
     ),
     ExperimentSubmission(
         model_name='ArchesWeather',
@@ -536,7 +536,7 @@ AIMIP_P4K_EXPERIMENT_SUBMISSIONS = [
             'uas': 'gn',
             'vas': 'gn',
         },
-        label='v20260908'
+        label='v20261107'
     ),
     ExperimentSubmission(
         model_name='ArchesWeather',
