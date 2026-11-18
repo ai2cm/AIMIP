@@ -1009,6 +1009,26 @@ def compute_weighted_mean(field: xr.Dataset, lat_dim: str='lat', lon_dim: str='l
     mean = transfer_attrs(field, mean)
     return mean
 
+def median_member(metric: xr.DataArray, dim: str = 'realization') -> xr.DataArray:
+    """The member whose metric is the median over `dim`, for every other coordinate (e.g. each submission).
+
+    Maps show this one member, ordered by the same global metric the bar charts show, so that a map is an
+    actual simulation rather than a blurred average. Members with a NaN metric are skipped; with an even number
+    of members the lower of the two middle values is taken. Returns the member labels, to be passed to
+    `field.sel({dim: ...})`.
+    """
+    def _pick(values, labels):
+        valid = np.flatnonzero(np.isfinite(values))
+        if valid.size == 0:
+            return labels[0]  # no metric (e.g. a variable the submission lacks): any member, the field is empty
+        ordered = valid[np.argsort(values[valid], kind='stable')]
+        return labels[ordered[(valid.size - 1) // 2]]
+
+    labels = metric[dim].values
+    return xr.apply_ufunc(
+        _pick, metric, kwargs={'labels': labels}, input_core_dims=[[dim]], vectorize=True,
+    ).rename(dim)
+
 def compute_error(pred: xr.Dataset, target: xr.Dataset) -> xr.Dataset:
     error = pred - target
     error = transfer_attrs(pred, error)
