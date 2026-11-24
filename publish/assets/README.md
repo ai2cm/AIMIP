@@ -15,7 +15,7 @@ tags:
 
 This dataset contains output from six model submission groups' ~46-year atmospheric simulations produced as contributions to the AI Model Intercomparison Project (AIMIP) Phase 1. AIMIP systematically evaluates AI weather/climate models trained on ERA5 reanalysis by running standardized AMIP-style simulations and comparing their climate statistics against the ERA5 reanalysis and a conventional climate model.
 
-There are currently eight model submissions from the six model submission groups. For each submission, there are typically 15 simulations spanning 5 ensemble members (different initial atmospheric conditions) and 3 sea surface temperature (SST) forcing scenarios — historical baseline, +2 K, and +4 K uniform global SST perturbations — covering October 1978 through December 2024. Outputs are CMIP6-compliant NetCDF files at monthly and, for most submissions, daily mean temporal resolution, at approximately 1° global resolution, on each model's own grid (NeuralGCM is the exception, at 2.8°).
+There are currently nine model submissions from the six model submission groups. For each submission, there are typically 15 simulations spanning 5 ensemble members and 3 sea surface temperature (SST) forcing scenarios — historical baseline, +2 K, and +4 K uniform global SST perturbations — covering October 1978 through December 2024. Outputs are CMIP6-compliant NetCDF files at monthly and, for most submissions, daily mean temporal resolution, at approximately 1° global resolution, on each model's own grid (NeuralGCM is the exception, at 2.8°).
 
 For the AIMIP Phase 1 specification that defines the model training and the required simulations that produced the output here, see https://github.com/ai2cm/AIMIP. For the initial evaluations conducted using a snapshot of this dataset, see https://arxiv.org/abs/2605.06944.
 
@@ -24,6 +24,7 @@ For the AIMIP Phase 1 specification that defines the model training and the requ
 | Group | Submission | Directory | Experiments | Frequency | Horizontal grid | Vertical grid |
 |---|---|---|---|---|---|---|
 | Ai2 | ACE2.1-ERA5 | `Ai2/ACE2-1-ERA5` | `aimip`, `aimip-p2k`, `aimip-p4k` | daily, monthly | 1° × 1° | 13 pressure levels (`gr`), regridded from native 8 model layers via ML; native layers also submitted (`gn`) |
+| Ai2 | ACE2.2-ERA5 | `Ai2/ACE2-2-ERA5` | `aimip`, `aimip-p2k`, `aimip-p4k` | daily, monthly | 1° × 1° | 7 pressure levels (`gr`), regridded from native 8 model layers via ML; native layers also submitted (`gn`) |
 | ArchesWeather | ArchesWeather | `ArchesWeather/ArchesWeather-V2` | `aimip`, `aimip-p2k`, `aimip-p4k` | daily, monthly | 1° × 1° | 7 pressure levels |
 | ArchesWeather | ArchesWeatherGen | `ArchesWeather/ArchesWeatherGen-V2` | `aimip`, `aimip-p2k`, `aimip-p4k` | daily, monthly | 1° × 1° | 7 pressure levels |
 | NVIDIA | cBottle-1.3 | `NVIDIA/CMIP6/AIMIP/NVIDIA/cBottle-1-3` | `aimip`, `aimip-p2k`, `aimip-p4k` | daily, monthly | HEALPix order 6 (~0.9°) | 8 pressure levels |
@@ -39,6 +40,7 @@ Model and code citations follow Table 1 of the [AIMIP Phase 1 evaluation paper](
 | Submission | Model reference | Code |
 |---|---|---|
 | ACE2.1-ERA5 | Watt-Meyer et al. (2025), [doi:10.1038/s41612-025-01090-0](https://doi.org/10.1038/s41612-025-01090-0) | Henn et al. (2026), [doi:10.5281/zenodo.19831256](https://doi.org/10.5281/zenodo.19831256) |
+| ACE2.2-ERA5 | Watt-Meyer et al. (2025), [doi:10.1038/s41612-025-01090-0](https://doi.org/10.1038/s41612-025-01090-0); Perkins et al. (2026), [arXiv:2512.18224](https://arxiv.org/abs/2512.18224) | Henn et al. (2026), [doi:10.5281/zenodo.24515079](https://doi.org/10.5281/zenodo.24515079) |
 | ArchesWeather, ArchesWeatherGen | Couairon et al. (2026), [doi:10.1126/sciadv.adx2372](https://doi.org/10.1126/sciadv.adx2372); Singh et al. (2026), [arXiv:2605.29976](https://arxiv.org/abs/2605.29976) | Couairon et al. (2026), [doi:10.5281/zenodo.20784771](https://doi.org/10.5281/zenodo.20784771) |
 | cBottle-1.3 | Brenowitz et al. (2025), [arXiv:2505.06474](https://arxiv.org/abs/2505.06474) | Manshausen et al. (2026), [doi:10.5281/zenodo.20832634](https://doi.org/10.5281/zenodo.20832634) |
 | DLESyM | Cresswell-Clay et al. (2025), [doi:10.1029/2025AV001706](https://doi.org/10.1029/2025AV001706) | Cresswell-Clay (2026), [doi:10.5281/zenodo.21270137](https://doi.org/10.5281/zenodo.21270137) |
@@ -84,7 +86,7 @@ Models are forced with prescribed monthly sea surface temperature and sea-ice co
 
 ### Ensemble members
 
-Each scenario is run five times, from different atmospheric states on or around October 1, 1978, labelled `r1i1p1f1` through `r5i1p1f1`. cBottle-1.3 is the exception: its five members differ by training-checkpoint combination rather than initial condition, and are labelled `r1i1p1f1` through `r1i1p5f1` (the "physics index"); see `NVIDIA/README.md`.
+Each scenario is typically run five times, with members labelled `r1i1p1f1` through `r5i1p1f1`. How the members are generated differs between models: some start from different atmospheric states on or around October 1, 1978, and others differ by random seed. cBottle-1.3's five members differ by training-checkpoint combination and are labelled `r1i1p1f1` through `r1i1p5f1` (the "physics index"); see `NVIDIA/README.md`.
 
 ### Output frequencies
 
@@ -121,14 +123,14 @@ Google/NeuralGCM/aimip-p4k/r2i1p1f1/day/tas/gn/v20260306/tas_day_NeuralGCM_aimip
 ArchesWeather/ArchesWeather-V2/aimip/r1i1p1f1/Amon/tas/gn/tas_Amon_ArchesWeather_aimip_r1i1p1f1_gn_197810-202501.nc
 ```
 
-Variable coverage differs by submission. All eight provide `ta`, `zg`, and `tas`; most provide `hus`, `ua`, `va`, `uas`, `vas`, `pr`, `ps`, and `ts`. DLESyM provides only `ta`, `zg`, `tas`, and `pr`. cBottle-1.3 additionally provides radiative and column-integrated fields (`rlut`, `rsds`, `rsut`, `prw`, `clivi`). ArchesWeather submissions provide `tos` and `psl`, and no `pr`; NeuralGCM provides `tdas` (2 m dewpoint temperature) instead of `huss`. The AIMIP protocol asked for `tdas` by mistake; the CMIP6 name is `tdps`.
+Variable coverage differs by submission. All nine provide `ta`, `zg`, and `tas`; most provide `hus`, `ua`, `va`, `uas`, `vas`, `pr`, `ps`, and `ts`. DLESyM provides only `ta`, `zg`, `tas`, and `pr`. cBottle-1.3 additionally provides radiative and column-integrated fields (`rlut`, `rsds`, `rsut`, `prw`, `clivi`). ArchesWeather submissions provide `tos` and `psl`, and no `pr`; NeuralGCM provides `tdas` (2 m dewpoint temperature) instead of `huss`. The AIMIP protocol asked for `tdas` by mistake; the CMIP6 name is `tdps`.
 
 ## Usage
 
 Download the whole dataset, or a subset, with the Hugging Face CLI:
 
 ```bash
-# everything (~1.4 TB)
+# everything (~1.7 TB)
 hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data
 
 # one submission plus the ERA5 reference data
@@ -161,11 +163,15 @@ The AIMIP evaluation code fills missing realizations with NaN and continues, so 
 
 ## Provenance
 
-Snapshot of the AIMIP archive hosted by DKRZ at `s3://ai-mip`, taken 2026-03-31, plus the DLESyM `v20260406` resubmission from April 2026 and the license and documentation files. It is published here as a citable, immutable revision of the Phase 1 submissions for the evaluation paper. Each submission is included at the version the evaluations read; the ERA5 reference data were replaced in October 2026 (see below).
+Snapshot of the AIMIP archive hosted by DKRZ at `s3://ai-mip`, taken 2026-03-31, plus the DLESyM `v20260406` resubmission from April 2026, ACE2.2-ERA5 `v20261107`, added in November 2026, and the license and documentation files. It is published here as a citable, immutable revision of the Phase 1 submissions for the evaluation paper. Each submission is included at the version the evaluations read; the ERA5 reference data were replaced in October 2026 (see below).
 
-### Changes since `phase1-2026-09`
+### Changes since `phase1-2026-10`
 
-The first revision, tagged `phase1-2026-09`, remains available unchanged. Since then:
+- **ACE2.2-ERA5 added** (`Ai2/ACE2-2-ERA5`, version `v20261107`): 720 files, with the same experiments, number of members and output frequencies as ACE2.1-ERA5. Nothing else changed.
+
+The earlier revisions, tagged `phase1-2026-09` and `phase1-2026-10`, remain available unchanged.
+
+### Changes from `phase1-2026-09` to `phase1-2026-10`
 
 - **ERA5 monthly reference replaced.** Apart from `pr`, `ERA5/mon_1deg/` was interpolated bilinearly from ERA5's native grid, so even a perfect model regridded conservatively showed a bias near coastlines and steep terrain. It also had a spurious column at longitude 359.5° near the poles, and its `pr` file lacked January 1978 – September 1979. `ERA5/mon_1deg_dkrz_v3/` is conservatively regridded throughout and complete.
 - **ERA5 daily reference rebuilt.** `ERA5/day_1deg/` (a Gaussian grid, each day the mean of four 6-hourly values) is replaced by `ERA5/day_1deg_arco/` (the regular 1° grid, 24-hour means, built from public data, and adding 2024).

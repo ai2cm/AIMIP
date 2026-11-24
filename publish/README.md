@@ -24,7 +24,7 @@ E1–E5 notebooks on `main` read.
 
 | Included | Not included |
 |---|---|
-| Ai2 ACE2.1-ERA5 (+ its dataset card and license) | MPI-M MPI-ESM1-2-LR (CMIP6 template, CC BY-SA) |
+| Ai2 ACE2.1-ERA5 (+ its dataset card and license) and ACE2.2-ERA5 | MPI-M MPI-ESM1-2-LR (CMIP6 template, CC BY-SA) |
 | ArchesWeather-V2, ArchesWeatherGen-V2 | native-resolution `ERA5/mon` (used only by an example notebook) |
 | DLESyM | `GPCP-SG` (not read by the notebooks) |
 | Google NeuralGCM, NeuralGCM-HRD | Jupyter checkpoint directories, truncated upload leftovers |
@@ -33,7 +33,7 @@ E1–E5 notebooks on `main` read.
 | ERA5 1° monthly and daily reference data (`ERA5/mon_1deg_dkrz_v3`, `ERA5/day_1deg_arco`) | superseded versions: NeuralGCM and NeuralGCM-HRD `v202512*`, DLESyM `v20250825`, MD-1p5 `v20251214`, cBottle-1-3 `v20260120` and `v20260217`, ERA5 `mon_1deg` and `day_1deg` (all in `phase1-2026-09`) |
 | root `LICENSE.txt` and `README.md` (dataset card) | |
 
-About 3,300 files and 1.36 TB, each submission at the version the evaluations read. Per-group documentation is published exactly as the groups
+About 4,000 files and 1.72 TB, each submission at the version the evaluations read. Per-group documentation is published exactly as the groups
 submitted it; nothing is generated on their behalf. Small files that override or add to the
 source tree live in [`assets/`](assets/) (root dataset card, root license, Ai2 license notice).
 

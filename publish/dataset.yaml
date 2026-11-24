@@ -24,6 +24,7 @@ s3_endpoint: https://s3.dkrz.cloud
 # Evaluation-only scope: everything the E1-E5 notebooks on `main` read.
 include:
   - Ai2/ACE2-1-ERA5
+  - Ai2/ACE2-2-ERA5
   - Ai2/DATASET_CARD.md
   - Ai2/LICENSE-DATASET
   - ArchesWeather/ArchesWeather-V2
@@ -59,6 +60,8 @@ exclude_globs:
   - "UMD-PARETO/MD-1p5/*/v20251214/*"
   - "NVIDIA/CMIP6/*/v20260120/*"
   - "NVIDIA/CMIP6/*/v20260217/*"
+  # ACE2.2-ERA5: only v20261107, the version the evaluations read, is published.
+  - "Ai2/ACE2-2-ERA5/*/v20260908/*"
 
 # Small files placed into the staging tree at the same relative path, overriding
 # anything linked from `source_dir` (root README.md dataset card, root LICENSE.txt,
@@ -67,10 +70,10 @@ assets_dir: assets
 
 # Constraints enforced by `make check`.
 expected:
-  min_files: 3200
-  max_files: 3400
-  total_bytes_min: 1.30e12
-  total_bytes_max: 1.45e12
+  min_files: 3900
+  max_files: 4100
+  total_bytes_min: 1.65e12
+  total_bytes_max: 1.80e12
   required_root_files:
     - README.md
     - LICENSE.txt
@@ -79,7 +82,6 @@ expected:
     - MPI-M/
     - ERA5/mon/
     - GPCP-SG/
-    - Ai2/ACE2-2-ERA5/
     - ERA5/mon_1deg/              # superseded references, published in phase1-2026-09
     - ERA5/day_1deg/
     - ERA5/mon_1deg_arco/         # independent check of the DKRZ files; nothing reads it
@@ -92,3 +94,4 @@ expected:
     - "UMD-PARETO/MD-1p5/*/v20251214/*"
     - "NVIDIA/CMIP6/*/v20260120/*"
     - "NVIDIA/CMIP6/*/v20260217/*"
+    - "Ai2/ACE2-2-ERA5/*/v20260908/*"
