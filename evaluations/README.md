@@ -26,7 +26,7 @@ The same files are available from two places. Both produce the `local_data/` lay
 | Source | Contents | Use it for |
 |---|---|---|
 | DKRZ S3, `s3://ai-mip/` | the live archive: every submission, the MPI-ESM1-2-LR formatting template, native-resolution ERA5 and GPCP-SG | the authoritative, current copy |
-| Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) | a fixed snapshot of exactly what the E1–E5 notebooks read, about 1.4 TB | reproducing the published evaluation; a single resumable command |
+| Hugging Face, [`allenai/aimip-phase1-submissions`](https://huggingface.co/datasets/allenai/aimip-phase1-submissions) | a fixed snapshot of exactly what the E1–E5 notebooks read, about 1.7 TB | reproducing the published evaluation; a single resumable command |
 
 #### From DKRZ S3
 
@@ -62,7 +62,7 @@ aws s3 sync s3://ai-mip/ERA5/ ./local_data/ERA5/ \
 ```bash
 pip install "huggingface_hub[hf_xet]"
 
-# Everything the notebooks read (~1.4 TB), straight into local_data/
+# Everything the notebooks read (~1.7 TB), straight into local_data/
 hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data
 
 # Or one submission plus the ERA5 reference data
@@ -71,14 +71,14 @@ hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_da
 
 # Or the exact revision these notebooks were run on
 hf download allenai/aimip-phase1-submissions --type dataset --local-dir local_data \
-    --revision phase1-2026-10
+    --revision phase1-2026-11
 ```
 
 Downloads resume if interrupted: rerun the same command and completed files are skipped.
 
-This snapshot is citable as **DOI [10.57967/hf/11385](https://doi.org/10.57967/hf/11385)** (revision `phase1-2026-10`). It is the submission data the evaluations use, each submission at the version they read, plus the 1° ERA5 reference data. It deliberately omits the MPI-ESM1-2-LR formatting template, the native-resolution `ERA5/mon` collection, `GPCP-SG` and superseded submission versions, none of which the E1–E5 notebooks read; take those from DKRZ if you need them. Its dataset card documents the per-submission grids, variables and known gaps, and what changed between revisions.
+This snapshot is citable as **DOI [10.57967/hf/11836](https://doi.org/10.57967/hf/11836)** (revision `phase1-2026-11`). It is the submission data the evaluations use, each submission at the version they read, plus the 1° ERA5 reference data. It deliberately omits the MPI-ESM1-2-LR formatting template, the native-resolution `ERA5/mon` collection, `GPCP-SG` and superseded submission versions, none of which the E1–E5 notebooks read; take those from DKRZ if you need them. Its dataset card documents the per-submission grids, variables and known gaps, and what changed between revisions.
 
-The first revision, `phase1-2026-09` (DOI [10.57967/hf/10490](https://doi.org/10.57967/hf/10490)), is the one behind the first version of the preprint. It holds the earlier ERA5 reference files, which the current notebooks no longer read.
+Two earlier revisions remain available. `phase1-2026-10` (DOI [10.57967/hf/11385](https://doi.org/10.57967/hf/11385)) is the same as the current one without ACE2.2-ERA5. `phase1-2026-09` (DOI [10.57967/hf/10490](https://doi.org/10.57967/hf/10490)) is the one behind the first version of the preprint. It holds the earlier ERA5 reference files, which the current notebooks no longer read.
 
 ### Starting from DKRZ
 
